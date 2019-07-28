@@ -1,0 +1,2 @@
+class Drum < ApplicationRecord
+end
