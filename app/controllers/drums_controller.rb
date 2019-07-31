@@ -1,4 +1,5 @@
 class DrumsController < ApplicationController
+  before_action :authenticate_user!
   before_action :set_drum, only: [:show, :update, :destroy]
 
   # GET /drums
