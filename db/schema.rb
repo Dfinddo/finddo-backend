@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_08_13_022506) do
+ActiveRecord::Schema.define(version: 2019_09_17_040538) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -19,6 +19,14 @@ ActiveRecord::Schema.define(version: 2019_08_13_022506) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "orders", force: :cascade do |t|
+    t.bigint "category_id"
+    t.string "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_orders_on_category_id"
   end
 
   create_table "subcategories", force: :cascade do |t|
@@ -62,5 +70,6 @@ ActiveRecord::Schema.define(version: 2019_08_13_022506) do
     t.index ["uid", "provider"], name: "index_users_on_uid_and_provider", unique: true
   end
 
+  add_foreign_key "orders", "categories"
   add_foreign_key "subcategories", "categories"
 end
