@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
   resources :orders
+  get '/orders/user/:user_id/active', to: 'orders#user_active_orders'
+
   resources :subcategories
   resources :categories
   mount_devise_token_auth_for 'User', at: 'auth'

@@ -14,6 +14,13 @@ class OrdersController < ApplicationController
     render json: @order
   end
 
+  # GET /orders/user/:user_id/active
+  def user_active_orders
+    @orders = Order.where user_id: params[:user_id]
+
+    render json: @orders
+  end
+
   # POST /orders
   def create
     @order = Order.new(order_params)
@@ -47,6 +54,6 @@ class OrdersController < ApplicationController
 
     # Only allow a trusted parameter "white list" through.
     def order_params
-      params.require(:order).permit(:category_id, :description)
+      params.require(:order).permit(:category_id, :description, :user_id)
     end
 end
