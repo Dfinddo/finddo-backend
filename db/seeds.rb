@@ -6,8 +6,8 @@ require 'faker'
 #
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
-User.create(name: 'Admin', email: 'admin@finddo.com.br', password: 'Finddo2019@', password_confirmation: 'Finddo2019@')
+User.create(name: 'Admin', email: 'admin@finddo.com.br', password: 'Finddo2019@', password_confirmation: 'Finddo2019@', user_type: :admin)
 
-100.times do |i|
+3.times do |i|
     Category.create(name: Faker::Name.name)
 end
