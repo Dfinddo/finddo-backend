@@ -6,17 +6,26 @@ services:
     volumes:
       - postgres:/var/lib/postgresql/data
  
+  mailcatcher:
+    image: zolweb/docker-mailcatcher:latest
+    ports:
+      - "1026:1025" 
+      - "1081:1080"
+
   app:
     depends_on:
       - "postgres"
+    links:
+      - "mailcatcher"
     build: .
     command: bash start.sh
     ports:
       - "3000:3000"
+      - "1080:1080"
+      - "1025:1025"
     volumes:
       - .:/finddobackend
       - gems:/gems
- 
  
 volumes:
   postgres:
