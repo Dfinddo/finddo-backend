@@ -6,8 +6,16 @@ require 'faker'
 #
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
-User.create(name: 'Admin', email: 'admin@finddo.com.br', password: 'Finddo2019@', password_confirmation: 'Finddo2019@', user_type: :admin)
-
-3.times do |i|
-    Category.create(name: Faker::Name.name)
+u = User.find_by(email: 'admin@finddo.com.br')
+if !u
+    User.create(name: 'Admin', email: 'admin@finddo.com.br', password: 'Finddo2019@', password_confirmation: 'Finddo2019@', user_type: :admin)
 end
+
+Category.destroy_all
+Category.create(id: 1, name: 'Hidráulica')
+Category.create(id: 2, name: 'Elétrica')
+Category.create(id: 3, name: 'Pintura')
+Category.create(id: 4, name: 'Ar condicionado')
+Category.create(id: 5, name: 'Instalações')
+Category.create(id: 6, name: 'Pequenas reformas')
+Category.create(id: 7, name: 'Consertos em geral')
