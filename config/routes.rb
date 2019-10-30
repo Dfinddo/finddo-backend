@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get '/orders/available', to: 'orders#available_orders'
   resources :orders
   get '/orders/user/:user_id/active', to: 'orders#user_active_orders'
 
