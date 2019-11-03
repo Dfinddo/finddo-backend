@@ -8,5 +8,8 @@ class User < ActiveRecord::Base
          :recoverable, :rememberable, :trackable, :validatable
   include DeviseTokenAuth::Concerns::User
 
+  has_many :orders, dependent: :restrict_with_error
+  has_many :orders_as_professional, class_name: "Order", foreign_key: :professional, dependent: :restrict_with_error
+
   enum user_type: [:admin, :user, :professional]
 end
