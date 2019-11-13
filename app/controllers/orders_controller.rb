@@ -1,6 +1,6 @@
 class OrdersController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_order, only: [:show, :update, :destroy]
+  before_action :set_order, only: [:show, :update, :destroy, :associate_professional]
 
   # GET /orders
   def index
@@ -14,12 +14,37 @@ class OrdersController < ApplicationController
     render json: @order
   end
 
+  # PUT /orders/associate/1
+  def associate_professional
+    @order.with_lock do
+      if @order.update(order_params)
+        render json: @order
+      else
+        render json: @order.errors, status: :unprocessable_entity
+      end
+    end
+  end
+
+  # GET /orders/user/:user_id/active
+  def user_active_orders
+    @orders = Order.where user_id: params[:user_id]
+
+    render json: @orders
+  end
+
+  # GET /orders/available
+  def available_orders
+    @orders = Order.where professional_order: nil
+
+    render json: @orders
+  end
+
   # POST /orders
   def create
     @order = Order.new(order_params)
 
     if @order.save
-      render json: @order, status: :created, location: @order
+      render json: @order, status: :created
     else
       render json: @order.errors, status: :unprocessable_entity
     end
@@ -47,6 +72,11 @@ class OrdersController < ApplicationController
 
     # Only allow a trusted parameter "white list" through.
     def order_params
-      params.require(:order).permit(:category_id, :description)
+      params.require(:order)
+        .permit(
+          :category_id, :description, 
+          :user_id, :professional,
+          :start_order, :end_order,
+          :order_status, :price, :paid)
     end
 end
