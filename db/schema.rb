@@ -10,15 +10,52 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_07_31_015327) do
+ActiveRecord::Schema.define(version: 2019_11_03_210746) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "drums", force: :cascade do |t|
+  create_table "addresses", force: :cascade do |t|
+    t.string "name"
+    t.string "street"
+    t.string "number"
+    t.string "complement"
+    t.string "cep"
+    t.string "district"
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_addresses_on_user_id"
+  end
+
+  create_table "categories", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "orders", force: :cascade do |t|
+    t.bigint "category_id"
+    t.string "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.integer "order_status", default: 0
+    t.integer "professional"
+    t.datetime "start_order"
+    t.datetime "end_order"
+    t.integer "price", default: 0, null: false
+    t.boolean "paid", default: false, null: false
+    t.index ["category_id"], name: "index_orders_on_category_id"
+    t.index ["user_id"], name: "index_orders_on_user_id"
+  end
+
+  create_table "subcategories", force: :cascade do |t|
+    t.string "name"
+    t.bigint "category_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_subcategories_on_category_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -48,10 +85,21 @@ ActiveRecord::Schema.define(version: 2019_07_31_015327) do
     t.json "tokens"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_type"
+    t.string "cep"
+    t.string "cidade"
+    t.string "complemento"
+    t.string "estado"
+    t.string "numero"
+    t.string "rua"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["uid", "provider"], name: "index_users_on_uid_and_provider", unique: true
   end
 
+  add_foreign_key "addresses", "users"
+  add_foreign_key "orders", "categories"
+  add_foreign_key "orders", "users"
+  add_foreign_key "subcategories", "categories"
 end

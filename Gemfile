@@ -10,7 +10,11 @@ gem 'pg', '>= 0.18', '< 2.0'
 # Use Puma as the app server
 gem 'puma', '~> 3.11'
 # Token based authentication
-gem 'devise_token_auth', '1.0.0'
+gem 'devise_token_auth', '1.1.3'
+# Serialize objects
+gem 'active_model_serializers'
+# Generate Fake data
+gem 'faker'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 # gem 'jbuilder', '~> 2.5'
 # Use Redis adapter to run Action Cable in production
