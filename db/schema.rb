@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_11_03_210746) do
+ActiveRecord::Schema.define(version: 2019_11_17_211424) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -46,6 +46,8 @@ ActiveRecord::Schema.define(version: 2019_11_03_210746) do
     t.datetime "end_order"
     t.integer "price", default: 0, null: false
     t.boolean "paid", default: false, null: false
+    t.bigint "address_id"
+    t.index ["address_id"], name: "index_orders_on_address_id"
     t.index ["category_id"], name: "index_orders_on_category_id"
     t.index ["user_id"], name: "index_orders_on_user_id"
   end
@@ -99,6 +101,7 @@ ActiveRecord::Schema.define(version: 2019_11_03_210746) do
   end
 
   add_foreign_key "addresses", "users"
+  add_foreign_key "orders", "addresses"
   add_foreign_key "orders", "categories"
   add_foreign_key "orders", "users"
   add_foreign_key "subcategories", "categories"

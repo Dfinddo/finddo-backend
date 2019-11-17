@@ -8,6 +8,12 @@ class AddressesController < ApplicationController
     render json: @addresses
   end
 
+  def get_by_user
+    @addresses = Address.where(user_id: params[:user_id])
+
+    render json: @addresses
+  end
+
   # GET /addresses/1
   def show
     render json: @address
