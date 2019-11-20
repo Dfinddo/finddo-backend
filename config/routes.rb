@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  # Users
+  post 'users', to: 'users#create'
+  put 'users/:id', to: 'users#update'
+
   # Orders
   get '/orders/available', to: 'orders#available_orders'
   put '/orders/associate/:id', to: 'orders#associate_professional'
