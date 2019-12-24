@@ -41,7 +41,18 @@ class OrdersController < ApplicationController
 
   # POST /orders
   def create
+    if(order_params[:start_order])
+      order_params[:start_order] = DateTime.parse(order_params[:start_order])
+    end
     @order = Order.new(order_params)
+
+    @order.address_id = @order.user.addresses[0].id
+
+    if !@order.start_order
+      @order.start_order = DateTime.now
+    elsif !@order.end_order
+      @order.end_order = @order.start_order + 7.days
+    end
 
     if @order.save
       render json: @order, status: :created
