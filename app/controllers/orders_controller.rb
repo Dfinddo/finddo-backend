@@ -34,7 +34,7 @@ class OrdersController < ApplicationController
 
   # GET /orders/available
   def available_orders
-    @orders = Order.where professional_order: nil
+    @orders = Order.where({professional_order: nil}).where(["start_order > :start",{start: DateTime.now}])
 
     render json: @orders
   end
