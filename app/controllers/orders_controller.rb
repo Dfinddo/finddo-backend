@@ -34,7 +34,7 @@ class OrdersController < ApplicationController
 
   # GET /orders/available
   def available_orders
-    @orders = Order.where({professional_order: nil}).where(["start_order > :start",{start: DateTime.now}])
+    @orders = Order.where({professional_order: nil}).where(["start_order > :start",{start: (Time.now - 3.days - 3.hours)}])
 
     render json: @orders
   end
@@ -49,9 +49,9 @@ class OrdersController < ApplicationController
     @order.address_id = @order.user.addresses[0].id
 
     if !@order.start_order
-      @order.start_order = DateTime.now
+      @order.start_order = (DateTime.now - 3.hours)
     elsif !@order.end_order
-      @order.end_order = @order.start_order + 7.days
+      @order.end_order = @order.start_order + 7.days - 3.hours
     end
 
     if @order.save

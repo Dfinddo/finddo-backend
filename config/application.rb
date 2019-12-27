@@ -32,9 +32,6 @@ module FinddoBackend
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
-    config.time_zone = 'Brasilia'
-    config.active_record.default_timezone = :local
-
     config.middleware.use Rack::Cors do
       allow do
         origins '*'
