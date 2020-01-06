@@ -5,7 +5,7 @@ Rails.application.routes.draw do
 
   # Orders
   get '/orders/available', to: 'orders#available_orders'
-  put '/orders/associate/:id', to: 'orders#associate_professional'
+  put '/orders/associate/:id/:professional_id', to: 'orders#associate_professional'
   get '/orders/user/:user_id/active', to: 'orders#user_active_orders'
   get '/orders', to: 'orders#index'
   post '/orders', to: 'orders#create'

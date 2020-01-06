@@ -14,10 +14,19 @@ class OrdersController < ApplicationController
     render json: @order
   end
 
-  # PUT /orders/associate/1
+  # PUT /orders/associate/1/2
   def associate_professional
+    @user = User.find(params[:professional_id])
+
+    if !@user
+      render json: {error: 'profissional não encontrado'}, status: :not_found
+    end
+
     @order.with_lock do
-      if @order.update(order_params)
+      @order.professional_order = @user
+      @order.assign_attributes(order_params)
+      @order.order_status = :agendando_visita
+      if @order.save
         render json: @order
       else
         render json: @order.errors, status: :unprocessable_entity
@@ -86,7 +95,7 @@ class OrdersController < ApplicationController
       params.require(:order)
         .permit(
           :category_id, :description, 
-          :user_id, :professional,
+          :user_id,
           :start_order, :end_order,
           :order_status, :price, :paid)
     end
