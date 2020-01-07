@@ -10,6 +10,7 @@ class User < ActiveRecord::Base
 
   has_many :orders, dependent: :restrict_with_error
   has_many :orders_as_professional, class_name: "Order", foreign_key: :professional, dependent: :restrict_with_error
+  has_many :addresses, dependent: :destroy
 
   enum user_type: [:admin, :user, :professional]
 end
