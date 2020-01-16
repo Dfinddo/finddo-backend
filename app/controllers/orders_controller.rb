@@ -25,7 +25,7 @@ class OrdersController < ApplicationController
     @order.with_lock do
       @order.professional_order = @user
       @order.assign_attributes(order_params)
-      @order.order_status = :agendando_visita
+      @order.order_status = :a_caminho
       if @order.save
         render json: @order
       else
@@ -44,6 +44,13 @@ class OrdersController < ApplicationController
   # GET /orders/available
   def available_orders
     @orders = Order.where({professional_order: nil}).where(["start_order > :start",{start: (Time.now - 3.days - 3.hours)}])
+
+    render json: @orders
+  end
+
+  # GET /orders/active_orders_professional/:user_id
+  def associated_active_orders
+    @orders = Order.where({professional: params[:user_id]})
 
     render json: @orders
   end
