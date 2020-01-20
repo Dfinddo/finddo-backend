@@ -13,4 +13,7 @@ class User < ActiveRecord::Base
   has_many :addresses, dependent: :destroy
 
   enum user_type: [:admin, :user, :professional]
+
+  validates :email, uniqueness: true
+  validates :cellphone, uniqueness: true
 end
