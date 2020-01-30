@@ -16,6 +16,10 @@ Rails.application.routes.draw do
 
   # Adresses
   get '/addresses/user/:user_id', to: 'addresses#get_by_user'
+  post '/addresses', to: 'addresses#create'
+  put '/addresses/:id', to: 'addresses#update'
+  delete '/addresses/:id', to: 'addresses#destroy'
+  
   resources :categories
   mount_devise_token_auth_for 'User', at: 'auth'
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html

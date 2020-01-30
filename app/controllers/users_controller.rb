@@ -56,6 +56,6 @@ class UsersController < ApplicationController
 
     def address_params
       params.require(:address)
-        .permit(:cep, :name, :street, :state, :district, :city, :number, :complement)
+        .permit(:cep, :name, :street, :state, :district, :city, :number, :complement, :selected)
     end
 end

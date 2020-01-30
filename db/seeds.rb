@@ -19,7 +19,7 @@ if !u
             name: Faker::Address.city_prefix, street: Faker::Address.street_name,
             complement: Faker::Address.secondary_address, cep: Faker::Address.zip_code,
             district: Faker::Address.community, user_id: u.id,
-            city: 'Rio de Janeiro', state: 'RJ'
+            city: 'Rio de Janeiro', state: 'RJ', number: rand(1..100)
         )
     end
 end
