@@ -1,4 +1,6 @@
 class Order < ApplicationRecord
+  has_one_attached :images
+
   belongs_to :category
   belongs_to :user
   belongs_to :professional_order, 

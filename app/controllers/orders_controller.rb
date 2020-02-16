@@ -62,6 +62,8 @@ class OrdersController < ApplicationController
     end
     @order = Order.new(order_params)
 
+    @order.images.attach(io: image_io, filename: image_name)
+
     @order.address_id = @order.user.addresses[0].id
 
     if !@order.start_order
@@ -105,5 +107,14 @@ class OrdersController < ApplicationController
           :user_id,
           :start_order, :end_order,
           :order_status, :price, :paid)
+    end
+
+    def image_io
+      decoded_image = Base64.decode64(params[:images][:base64])
+      StringIO.new(decoded_image)
+    end
+    
+    def image_name
+      params[:images][:file_name]
     end
 end
