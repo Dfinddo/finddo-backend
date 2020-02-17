@@ -62,7 +62,9 @@ class OrdersController < ApplicationController
     end
     @order = Order.new(order_params)
 
-    @order.images.attach(io: image_io, filename: image_name)
+    params[:images].each do |image|
+      @order.images.attach(image_io(image))
+    end
 
     @order.address_id = @order.user.addresses[0].id
 
@@ -109,12 +111,8 @@ class OrdersController < ApplicationController
           :order_status, :price, :paid)
     end
 
-    def image_io
-      decoded_image = Base64.decode64(params[:images][:base64])
-      StringIO.new(decoded_image)
-    end
-    
-    def image_name
-      params[:images][:file_name]
+    def image_io(image)
+      decoded_image = Base64.decode64(image[:base64])
+      { io: StringIO.new(decoded_image), filename: image[:file_name] }
     end
 end

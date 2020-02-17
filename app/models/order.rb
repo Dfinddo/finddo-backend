@@ -1,5 +1,5 @@
 class Order < ApplicationRecord
-  has_one_attached :images
+  has_many_attached :images
 
   belongs_to :category
   belongs_to :user

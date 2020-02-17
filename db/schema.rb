@@ -71,7 +71,7 @@ ActiveRecord::Schema.define(version: 2020_02_16_215542) do
     t.integer "price", default: 0, null: false
     t.boolean "paid", default: false, null: false
     t.bigint "address_id"
-    t.string "images"
+    t.string "images", default: [], array: true
     t.index ["address_id"], name: "index_orders_on_address_id"
     t.index ["category_id"], name: "index_orders_on_category_id"
     t.index ["user_id"], name: "index_orders_on_user_id"

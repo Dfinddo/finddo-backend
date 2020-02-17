@@ -10,6 +10,12 @@ class OrderSerializer < ActiveModel::Serializer
   has_one :address
 
   def images
-    return rails_blob_path(object.images, only_path: true)
+    urls = []
+    
+    object.images.each do |image|
+      urls << rails_blob_path(image, only_path: true)
+    end
+    
+    urls
   end
 end
