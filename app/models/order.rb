@@ -11,5 +11,7 @@ class Order < ApplicationRecord
   # :em_servico será o status quando o profissional só fizer a visita e tiver que retornar
   enum order_status: [:analise, :agendando_visita, :a_caminho, :em_servico, :finalizado, :cancelado]
 
+  enum urgency: [:urgent, :not_urgent]
+
   validates :price, numericality:  { greater_than_or_equal_to: 0 }
 end

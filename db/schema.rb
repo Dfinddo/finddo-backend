@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_02_16_215542) do
+ActiveRecord::Schema.define(version: 2020_02_19_021313) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -72,6 +72,7 @@ ActiveRecord::Schema.define(version: 2020_02_16_215542) do
     t.boolean "paid", default: false, null: false
     t.bigint "address_id"
     t.string "images", default: [], array: true
+    t.integer "urgency", default: 1
     t.index ["address_id"], name: "index_orders_on_address_id"
     t.index ["category_id"], name: "index_orders_on_category_id"
     t.index ["user_id"], name: "index_orders_on_user_id"

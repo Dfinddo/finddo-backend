@@ -43,7 +43,7 @@ class OrdersController < ApplicationController
 
   # GET /orders/available
   def available_orders
-    @orders = Order.where({professional_order: nil}).where(["start_order > :start",{start: (Time.now - 3.days - 3.hours)}])
+    @orders = Order.where({professional_order: nil}).order(urgency: :asc).order(start_order: :asc)
 
     render json: @orders
   end
@@ -57,9 +57,14 @@ class OrdersController < ApplicationController
 
   # POST /orders
   def create
+    # quando o pedido é urgente
     if(order_params[:start_order])
       order_params[:start_order] = DateTime.parse(order_params[:start_order])
     end
+    if(order_params[:end_order])
+      order_params[:end_order] = DateTime.parse(order_params[:end_order])
+    end
+
     @order = Order.new(order_params)
 
     params[:images].each do |image|
@@ -68,9 +73,11 @@ class OrdersController < ApplicationController
 
     @order.address_id = @order.user.addresses[0].id
 
+    # quando o pedido não é urgente
     if !@order.start_order
       @order.start_order = (DateTime.now - 3.hours)
-    elsif !@order.end_order
+    end
+    if !@order.end_order
       @order.end_order = @order.start_order + 7.days - 3.hours
     end
 
@@ -106,7 +113,7 @@ class OrdersController < ApplicationController
       params.require(:order)
         .permit(
           :category_id, :description, 
-          :user_id,
+          :user_id, :urgency,
           :start_order, :end_order,
           :order_status, :price, :paid)
     end
