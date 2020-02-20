@@ -71,8 +71,6 @@ class OrdersController < ApplicationController
       @order.images.attach(image_io(image))
     end
 
-    @order.address_id = @order.user.addresses[0].id
-
     # quando o pedido não é urgente
     if !@order.start_order
       @order.start_order = (DateTime.now - 3.hours)
@@ -115,7 +113,8 @@ class OrdersController < ApplicationController
           :category_id, :description, 
           :user_id, :urgency,
           :start_order, :end_order,
-          :order_status, :price, :paid)
+          :order_status, :price, 
+          :paid, :address_id)
     end
 
     def image_io(image)

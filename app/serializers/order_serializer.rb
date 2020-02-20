@@ -2,7 +2,7 @@ class OrderSerializer < ActiveModel::Serializer
   include Rails.application.routes.url_helpers
 
   attributes :id, :description, :order_status,
-    :start_order, :end_order, :price, :paid, :images
+    :start_order, :end_order, :price, :paid, :images, :urgency
 
   has_one :category
   has_one :professional_order
