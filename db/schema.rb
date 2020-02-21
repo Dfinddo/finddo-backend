@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_02_19_021313) do
+ActiveRecord::Schema.define(version: 2020_02_21_003702) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -86,6 +86,14 @@ ActiveRecord::Schema.define(version: 2020_02_19_021313) do
     t.index ["category_id"], name: "index_subcategories_on_category_id"
   end
 
+  create_table "user_profile_photos", force: :cascade do |t|
+    t.string "photo"
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_user_profile_photos_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "provider", default: "email", null: false
     t.string "uid", default: "", null: false
@@ -133,4 +141,5 @@ ActiveRecord::Schema.define(version: 2020_02_19_021313) do
   add_foreign_key "orders", "categories"
   add_foreign_key "orders", "users"
   add_foreign_key "subcategories", "categories"
+  add_foreign_key "user_profile_photos", "users"
 end
