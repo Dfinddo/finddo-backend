@@ -14,6 +14,7 @@ Rails.application.routes.draw do
   post '/orders', to: 'orders#create'
   get '/orders/:id', to: 'orders#show'
   put '/orders/:id', to: 'orders#update'
+  patch '/orders/:id', to: 'orders#update'
   delete '/orders/:id', to: 'orders#destroy'
 
   # Adresses
