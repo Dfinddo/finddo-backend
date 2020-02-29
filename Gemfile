@@ -14,7 +14,9 @@ gem 'devise_token_auth', '1.1.3'
 # Serialize objects
 gem 'active_model_serializers'
 # Generate Fake data
-gem 'faker'
+gem 'faker', '2.10.1'
+# Bucket S3 to store files
+gem "aws-sdk-s3", require: false
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 # gem 'jbuilder', '~> 2.5'
 # Use Redis adapter to run Action Cable in production

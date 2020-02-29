@@ -4,9 +4,13 @@ class ApplicationController < ActionController::API
 
         protected
 
+        # TODO: verificar real necessidade desses parâmetros
         def configure_permitted_parameters
                 devise_parameter_sanitizer.permit(
                         :sign_up, 
-                        keys: [:name, :cellphone, :cpf, :user_type])
+                        keys: [:name, :cellphone, :cpf, :user_type, :email])
+                devise_parameter_sanitizer.permit(
+                        :account_update, 
+                        keys: [:name, :cellphone, :cpf, :user_type, :email, :profile_photo])
         end
 end

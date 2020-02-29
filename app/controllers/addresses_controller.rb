@@ -1,4 +1,5 @@
 class AddressesController < ApplicationController
+  before_action :authenticate_user!
   before_action :set_address, only: [:show, :update, :destroy]
 
   # GET /addresses
@@ -24,7 +25,7 @@ class AddressesController < ApplicationController
     @address = Address.new(address_params)
 
     if @address.save
-      render json: @address, status: :created, location: @address
+      render json: @address, status: :created
     else
       render json: @address.errors, status: :unprocessable_entity
     end
@@ -52,6 +53,6 @@ class AddressesController < ApplicationController
 
     # Only allow a trusted parameter "white list" through.
     def address_params
-      params.require(:address).permit(:name, :street, :number, :complement, :cep, :district, :user_id)
+      params.require(:address).permit(:name, :street, :number, :complement, :cep, :district, :user_id, :selected)
     end
 end
