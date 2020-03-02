@@ -115,7 +115,8 @@ class OrdersController < ApplicationController
           :start_order, :end_order,
           :order_status, :price, 
           :paid, :address_id,
-          :rate)
+          :rate, :order_wirecard_own_id,
+          :order_wirecard_id, :payment_wirecard_id)
     end
 
     def image_io(image)

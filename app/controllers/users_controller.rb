@@ -76,7 +76,8 @@ class UsersController < ApplicationController
           :name, :cellphone, 
           :cpf, :user_type, 
           :password, :password_confirmation,
-          :email)
+          :email, :customer_wirecard_id,
+          :birthdate, :own_id_wirecard)
     end
 
     def address_params
