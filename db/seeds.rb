@@ -14,8 +14,10 @@ end
 u = User.find_by(email: 'teste@email.com')
 if !u
     u = User.create(name: "Teste", email: 'teste@email.com', password: '12345678', 
-        password_confirmation: '12345678', user_type: :user, cellphone: '980808080', cpf: '12345678900',
-        customer_wirecard_id: "CUS-4U7OOQLK2TNB")
+        password_confirmation: '12345678', user_type: :user, cellphone: '21980808080', cpf: '12345678900',
+        customer_wirecard_id: "CUS-MSB4HW7S7LTU",
+        cep: "20921440", cidade: "Rio de Janeiro", complemento: "casa 02", rua: "Campo de São Cristóvão",
+        estado: "RJ", birthdate: "23/02/1994", own_id_wirecard: "dd05a471-6764-4c56-9bdc-d986912a0d52", bairro: "São Cristóvão")
     10.times do |a|
         Address.create(
             name: Faker::Address.city_prefix, street: Faker::Address.street_name,
@@ -29,7 +31,7 @@ end
 u = User.find_by(email: 'prof@email.com')
 if !u
     u = User.create(name: "Profissional", email: 'prof@email.com', password: '12345678', 
-        password_confirmation: '12345678', user_type: :professional, cellphone: '980808081', cpf: '12345678901')
+        password_confirmation: '12345678', user_type: :professional, cellphone: '21980808081', cpf: '12345678901')
 end
 
 Category.destroy_all
