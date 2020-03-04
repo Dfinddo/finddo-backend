@@ -23,6 +23,16 @@ class UsersController < ApplicationController
       # update response with the header that will be required by the next request
       response.headers.merge!(new_auth_header)
 
+      # informações de cobrança da Wirecard
+      @user.cep = address_params[:cep]
+      @user.rua = address_params[:street]
+      @user.estado = address_params[:state]
+      @user.bairro = address_params[:district]
+      @user.cidade = address_params[:city]
+      @user.numero = address_params[:number]
+      @user.complemento = address_params[:complement]
+      # informações de cobrança da Wirecard
+
       @user.save
       render json: @user, status: :created
     else
