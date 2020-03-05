@@ -20,6 +20,12 @@ class OrdersController < ApplicationController
 
     if !@user
       render json: {error: 'profissional não encontrado'}, status: :not_found
+      return
+    end
+
+    if @order.professional_order
+      render json: {error: 'pedido já possui profissional'}, status: :not_found
+      return
     end
 
     @order.with_lock do
