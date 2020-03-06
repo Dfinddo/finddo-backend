@@ -76,7 +76,7 @@ class UsersController < ApplicationController
   def update_player_id
     @another_user = User.where("player_ids @> ARRAY[?]::varchar[]", [params[:player_id]])
     
-    @user.player_ids << params[:player_id]
+    @user.player_ids << params[:player_id] unless @user.player_ids.include? [params[:player_id]
 
     if @another_user.length > 0 && @another_user != @user
       @another_user.first.transaction do
