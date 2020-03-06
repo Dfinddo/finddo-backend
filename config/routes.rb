@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   delete 'users/remove_player_id_notifications/:id/:player_id', to: 'users#remove_player_id'
 
   # Orders
+  post '/orders/teste', to: 'orders#teste'
   get '/orders/available', to: 'orders#available_orders'
   put '/orders/associate/:id/:professional_id', to: 'orders#associate_professional'
   get '/orders/user/:user_id/active', to: 'orders#user_active_orders'

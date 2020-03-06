@@ -1,5 +1,5 @@
 class OrdersController < ApplicationController
-  before_action :authenticate_user!
+  before_action :authenticate_user!, except: [:teste]
   before_action :set_order, only: [:show, :update, :destroy, :associate_professional]
 
   # GET /orders
@@ -99,6 +99,9 @@ class OrdersController < ApplicationController
     else
       render json: @order.errors, status: :unprocessable_entity
     end
+  end
+
+  def teste
   end
 
   # DELETE /orders/1
