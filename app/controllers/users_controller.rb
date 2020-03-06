@@ -78,7 +78,7 @@ class UsersController < ApplicationController
     
     @user.player_ids << params[:player_id]
 
-    if @another_user.length > 0
+    if @another_user.length > 0 && @another_user != @user
       @another_user.first.transaction do
         @another_user.first.player_ids.delete params[:player_id]
 
