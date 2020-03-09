@@ -113,7 +113,22 @@ class OrdersController < ApplicationController
       @order.paid = true
       @order.order_status = :finalizado
 
-      @order.save
+      if @order.save
+        devices = []
+        @order.professional.player_ids.each do |el|
+          devices << el
+        end
+        @order.user.player_ids.each do |el|
+          devices << el
+        end
+
+        HTTParty.post("https://onesignal.com/api/v1/notifications", 
+          body: { 
+            app_id: ENV['ONE_SIGNAL_APP_ID'], 
+            include_player_ids: devices,
+            data: {pagamento: 'aceito'},
+            contents: {en: "Pagamento recebido\nObrigado por usar o Finddo!"} })
+      end
     end
   end
 
