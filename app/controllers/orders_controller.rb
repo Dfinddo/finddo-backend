@@ -111,6 +111,7 @@ class OrdersController < ApplicationController
 
   # PATCH/PUT /orders/1
   def update
+    old_status = @order.order_status
     if @order.update(order_params)
       devices = []
       @order.user.player_ids.each do |el|
@@ -126,11 +127,7 @@ class OrdersController < ApplicationController
         status_novo = "Serviço em execução"
       end
 
-      print status_novo
-      print @order.order_status
-      print "=================================================================================="
-
-      if status_novo != ""
+      if status_novo != "" && status_novo != old_status
         HTTParty.post("https://onesignal.com/api/v1/notifications", 
         body: { 
           app_id: ENV['ONE_SIGNAL_APP_ID'], 
@@ -213,7 +210,8 @@ class OrdersController < ApplicationController
           :order_status, :price, 
           :paid, :address_id,
           :rate, :order_wirecard_own_id,
-          :order_wirecard_id, :payment_wirecard_id)
+          :order_wirecard_id, :payment_wirecard_id,
+          :hora_inicio, :hora_fim)
     end
 
     def image_io(image)

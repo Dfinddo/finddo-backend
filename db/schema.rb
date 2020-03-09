@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_03_06_015752) do
+ActiveRecord::Schema.define(version: 2020_03_09_065244) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -77,6 +77,8 @@ ActiveRecord::Schema.define(version: 2020_03_06_015752) do
     t.string "order_wirecard_own_id"
     t.string "order_wirecard_id"
     t.string "payment_wirecard_id"
+    t.string "hora_inicio"
+    t.string "hora_fim"
     t.index ["address_id"], name: "index_orders_on_address_id"
     t.index ["category_id"], name: "index_orders_on_category_id"
     t.index ["user_id"], name: "index_orders_on_user_id"
