@@ -115,7 +115,7 @@ class OrdersController < ApplicationController
 
       if @order.save
         devices = []
-        @order.professional.player_ids.each do |el|
+        @order.professional_order.player_ids.each do |el|
           devices << el
         end
         @order.user.player_ids.each do |el|
