@@ -126,6 +126,9 @@ class OrdersController < ApplicationController
         status_novo = "Serviço em execução"
       end
 
+      print status_novo
+      print "=================================================================================="
+
       if status_novo != ""
         HTTParty.post("https://onesignal.com/api/v1/notifications", 
         body: { 
