@@ -127,6 +127,7 @@ class OrdersController < ApplicationController
       end
 
       print status_novo
+      print @order.order_status
       print "=================================================================================="
 
       if status_novo != ""
