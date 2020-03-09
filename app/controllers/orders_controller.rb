@@ -86,6 +86,23 @@ class OrdersController < ApplicationController
     end
 
     if @order.save
+      devices = []
+      
+      User.where(user_type: :professional).each do |u|
+        u.player_ids.each do |pl|
+          devices << pl
+        end
+      end
+
+      if devices.length > 0
+        HTTParty.post("https://onesignal.com/api/v1/notifications", 
+            body: { 
+              app_id: ENV['ONE_SIGNAL_APP_ID'], 
+              include_player_ids: devices,
+              data: {pedido: 'novo'},
+              contents: {en: "Novo pedido disponível para atendimento"} })
+      end
+
       render json: @order, status: :created
     else
       render json: @order.errors, status: :unprocessable_entity
@@ -95,6 +112,31 @@ class OrdersController < ApplicationController
   # PATCH/PUT /orders/1
   def update
     if @order.update(order_params)
+      devices = []
+      @order.user.player_ids.each do |el|
+        devices << el
+      end
+
+      status_novo = ""
+      if [:agendando_visita, :a_caminho, :em_servico].include? @order.order_status
+        if @order.order_status == :agendando_visita
+          status_novo = "Agendando visita"
+        elsif @order.order_status == :a_caminho
+          status_novo = "Profissional à caminho"
+        elsif @order.order_status == :em_servico
+          status_novo = "Serviço em execução"
+        end
+      end
+
+      if status_novo != ""
+        HTTParty.post("https://onesignal.com/api/v1/notifications", 
+        body: { 
+          app_id: ENV['ONE_SIGNAL_APP_ID'], 
+          include_player_ids: devices,
+          data: {pedido: 'status'},
+          contents: {en: "#{@order.category.name}\n#{status_novo}"} })
+      end
+
       render json: @order
     else
       render json: @order.errors, status: :unprocessable_entity
@@ -107,6 +149,7 @@ class OrdersController < ApplicationController
   end
 
   def payment_webhook
+    print params[:id]
     if params[:event] == "PAYMENT.AUTHORIZED"
       order_id = params[:resource][:payment][:_links][:order][:title];
       @order = Order.find_by(order_wirecard_id: order_id)
@@ -129,6 +172,26 @@ class OrdersController < ApplicationController
             data: {pagamento: 'aceito'},
             contents: {en: "Pagamento recebido\nObrigado por usar o Finddo!"} })
       end
+    elsif params[:event] == "PAYMENT.CANCELLED"
+      order_id = params[:resource][:payment][:_links][:order][:title];
+      @order = Order.find_by(order_wirecard_id: order_id)
+      #@order.paid = true
+      #@order.order_status = :finalizado
+
+      devices = []
+      @order.professional_order.player_ids.each do |el|
+        devices << el
+      end
+      @order.user.player_ids.each do |el|
+        devices << el
+      end
+
+      HTTParty.post("https://onesignal.com/api/v1/notifications", 
+        body: { 
+          app_id: ENV['ONE_SIGNAL_APP_ID'], 
+          include_player_ids: devices,
+          data: {pagamento: 'cancelado'},
+          contents: {en: "Pagamento não efetuado\nFavor informações de pagamento"} })
     end
   end
 
