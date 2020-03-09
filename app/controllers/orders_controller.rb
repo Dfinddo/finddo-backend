@@ -1,5 +1,5 @@
 class OrdersController < ApplicationController
-  before_action :authenticate_user!
+  before_action :authenticate_user!, except: [:payment_webhook]
   before_action :set_order, only: [:show, :update, :destroy, :associate_professional]
 
   # GET /orders
@@ -104,6 +104,10 @@ class OrdersController < ApplicationController
   # DELETE /orders/1
   def destroy
     @order.destroy
+  end
+
+  def payment_webhook
+
   end
 
   private
