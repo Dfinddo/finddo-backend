@@ -118,11 +118,11 @@ class OrdersController < ApplicationController
       end
 
       status_novo = ""
-      if @order.order_status == :agendando_visita
+      if @order.order_status == "agendando_visita"
         status_novo = "Agendando visita"
-      elsif @order.order_status == :a_caminho
+      elsif @order.order_status == "a_caminho"
         status_novo = "Profissional à caminho"
-      elsif @order.order_status == :em_servico
+      elsif @order.order_status == "em_servico"
         status_novo = "Serviço em execução"
       end
 
