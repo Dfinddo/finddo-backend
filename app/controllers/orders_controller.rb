@@ -107,7 +107,10 @@ class OrdersController < ApplicationController
   end
 
   def payment_webhook
-
+    if params[:event] == "PAYMENT.AUTHORIZED"
+      print "PAGO==============================================="
+      print params[:resource][:payment][:_links][:order][:title]
+    end
   end
 
   private
