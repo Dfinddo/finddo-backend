@@ -4,7 +4,7 @@ class OrderSerializer < ActiveModel::Serializer
   attributes :id, :description, :order_status,
     :start_order, :end_order, :price, :paid, :images, :urgency,
     :professional_photo, :rate, :order_wirecard_own_id, :order_wirecard_id,
-    :payment_wirecard_id
+    :payment_wirecard_id, :hora_inicio, :hora_fim
 
   has_one :category
   has_one :professional_order

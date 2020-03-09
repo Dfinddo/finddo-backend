@@ -5,6 +5,7 @@ class UsersController < ApplicationController
   # POST /users
   def create
     @user = User.new(user_params)
+    @user.player_ids = params[:player_ids]
 
     if @user.save
       @user.addresses.build(address_params)
@@ -73,6 +74,41 @@ class UsersController < ApplicationController
     end
   end
 
+  def update_player_id
+    @another_user = User.where("player_ids @> ARRAY[?]::varchar[]", [params[:player_id]])
+    
+    @user.player_ids << params[:player_id] unless @user.player_ids.include? params[:player_id]
+
+    if @another_user.length > 0 && @another_user != @user
+      @another_user.first.transaction do
+        @another_user.first.player_ids.delete params[:player_id]
+
+        if @another_user.first.save! && @user.save!
+          render json: @user, status: :ok
+        else
+          render json: {error: 'falha ao processar o id'}, status: :unprocessable_entity
+        end
+      end
+      return
+    elsif @user.save
+      render json: @user, status: :ok
+    else
+      render json: {error: 'falha ao processar o id'}, status: :unprocessable_entity
+    end
+  end
+
+  def remove_player_id
+    if params[:player_id]
+      @user.player_ids.delete params[:player_id]
+
+      if @user.save
+        return
+      else
+        render json: {error: 'falha ao remover o id do dispositivo do usuário'}, status: :unprocessable_entity
+      end
+    end
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_user
@@ -87,7 +123,7 @@ class UsersController < ApplicationController
           :cpf, :user_type, 
           :password, :password_confirmation,
           :email, :customer_wirecard_id,
-          :birthdate, :own_id_wirecard)
+          :birthdate, :own_id_wirecard, :player_ids)
     end
 
     def address_params
