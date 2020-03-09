@@ -118,14 +118,12 @@ class OrdersController < ApplicationController
       end
 
       status_novo = ""
-      if [:agendando_visita, :a_caminho, :em_servico].include? @order.order_status
-        if @order.order_status == :agendando_visita
-          status_novo = "Agendando visita"
-        elsif @order.order_status == :a_caminho
-          status_novo = "Profissional à caminho"
-        elsif @order.order_status == :em_servico
-          status_novo = "Serviço em execução"
-        end
+      if @order.order_status == :agendando_visita
+        status_novo = "Agendando visita"
+      elsif @order.order_status == :a_caminho
+        status_novo = "Profissional à caminho"
+      elsif @order.order_status == :em_servico
+        status_novo = "Serviço em execução"
       end
 
       if status_novo != ""
