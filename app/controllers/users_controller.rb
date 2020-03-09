@@ -5,6 +5,7 @@ class UsersController < ApplicationController
   # POST /users
   def create
     @user = User.new(user_params)
+    @user.player_ids = params[:player_ids]
 
     if @user.save
       @user.addresses.build(address_params)
