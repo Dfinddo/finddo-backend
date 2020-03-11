@@ -148,9 +148,12 @@ class OrdersController < ApplicationController
   end
 
   def payment_webhook
-    print params[:id]
-    if params[:event] == "PAYMENT.AUTHORIZED"
-      order_id = params[:resource][:payment][:_links][:order][:title];
+    order_id = params[:resource][:payment][:_links][:order][:title];
+    if params[:event] == "PAYMENT.IN_ANALYSIS"
+      @order = Order.find_by(order_wirecard_id: order_id)
+      @order.order_status = :processando_pagamento
+      @order.save
+    elsif params[:event] == "PAYMENT.AUTHORIZED"
       @order = Order.find_by(order_wirecard_id: order_id)
       @order.paid = true
       @order.order_status = :finalizado
@@ -174,8 +177,9 @@ class OrdersController < ApplicationController
     elsif params[:event] == "PAYMENT.CANCELLED"
       order_id = params[:resource][:payment][:_links][:order][:title];
       @order = Order.find_by(order_wirecard_id: order_id)
-      #@order.paid = true
-      #@order.order_status = :finalizado
+      
+      # voltar para em_servico para poder pagar de novo
+      @order.order_status = :em_servico
 
       devices = []
       @order.professional_order.player_ids.each do |el|
@@ -190,7 +194,7 @@ class OrdersController < ApplicationController
           app_id: ENV['ONE_SIGNAL_APP_ID'], 
           include_player_ids: devices,
           data: {pagamento: 'cancelado'},
-          contents: {en: "Pagamento não efetuado\nFavor informações de pagamento"} })
+          contents: {en: "Pagamento não efetuado\nFavor revisar informações de pagamento"} })
     end
   end
 
