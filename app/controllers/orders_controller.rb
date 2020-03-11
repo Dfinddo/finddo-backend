@@ -177,8 +177,9 @@ class OrdersController < ApplicationController
     elsif params[:event] == "PAYMENT.CANCELLED"
       order_id = params[:resource][:payment][:_links][:order][:title];
       @order = Order.find_by(order_wirecard_id: order_id)
-      #@order.paid = true
-      @order.order_status = :recusado
+      
+      # voltar para em_servico para poder pagar de novo
+      @order.order_status = :em_servico
 
       devices = []
       @order.professional_order.player_ids.each do |el|
