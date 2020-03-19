@@ -123,7 +123,8 @@ class UsersController < ApplicationController
           :cpf, :user_type, 
           :password, :password_confirmation,
           :email, :customer_wirecard_id,
-          :birthdate, :own_id_wirecard, :player_ids)
+          :birthdate, :own_id_wirecard, 
+          :player_ids, :surname)
     end
 
     def address_params
