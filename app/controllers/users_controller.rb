@@ -124,7 +124,8 @@ class UsersController < ApplicationController
           :password, :password_confirmation,
           :email, :customer_wirecard_id,
           :birthdate, :own_id_wirecard, 
-          :player_ids, :surname)
+          :player_ids, :surname, :mothers_name,
+          :id_wirecard_account, :token_wirecard_account)
     end
 
     def address_params
