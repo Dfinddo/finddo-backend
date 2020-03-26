@@ -4,5 +4,6 @@ class AddSurnameToUsers < ActiveRecord::Migration[5.2]
     add_column :users, :mothers_name, :string
     add_column :users, :id_wirecard_account, :string
     add_column :users, :token_wirecard_account, :string
+    add_column :users, :refresh_token_wirecard_account, :string
   end
 end
