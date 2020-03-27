@@ -11,7 +11,7 @@ if !u
     User.create(name: 'Admin', email: 'admin@finddo.com.br', password: 'Finddo2019@', password_confirmation: 'Finddo2019@', user_type: :admin)
 end
 
-u = User.find_by(email: 'admin@finddo.com.br')
+u = User.find_by(email: 'prof@email.com')
 if !u
     User.create(
         name: "Teste", email: 'prof@email.com', 
