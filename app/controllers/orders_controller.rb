@@ -151,7 +151,7 @@ class OrdersController < ApplicationController
     order_id = params[:resource][:payment][:_links][:order][:title];
     if params[:event] == "PAYMENT.IN_ANALYSIS"
       @order = Order.find_by(order_wirecard_id: order_id)
-      @order.order_status = :processando_pagamento
+      @order.order_status = :processando_pagamento if @order.order_status != "finalizado"
       @order.save
     elsif params[:event] == "PAYMENT.AUTHORIZED"
       @order = Order.find_by(order_wirecard_id: order_id)
