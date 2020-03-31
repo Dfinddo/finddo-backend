@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  before_action :authenticate_user!, except: [:create]
+  before_action :authenticate_user!, except: [:create, :generate_access_token_professional]
   before_action :set_user, except: [:create]
 
   # POST /users
@@ -106,6 +106,35 @@ class UsersController < ApplicationController
       else
         render json: {error: 'falha ao remover o id do dispositivo do usuário'}, status: :unprocessable_entity
       end
+    end
+  end
+
+  def generate_access_token_professional
+    # response = HTTParty.post("https://connect-sandbox.moip.com.br/oauth/token", {
+    response = HTTParty.post("https://connect-sandbox.moip.com.br/oauth/token", {
+      # body: "client_id=#{ENV['WIRECARD_APP_ID']}&client_secret=#{ENV['WIRECARD_CLIENT_SECRET']}&redirect_uri=#{ENV['WIRECARD_REDIRECT_URI']}&grant_type=authorization_code&code=#{params[:code]}",
+      body: "client_id=APP-3ZE5RL6VF6OA&client_secret=5a384a3f54c7401e969bc1c9a81360bf&redirect_uri=http://192.168.1.4:4200/redirect&grant_type=authorization_code&code=#{params[:code]}",
+      headers: {
+        'Content-Type' => 'application/x-www-form-urlencoded',
+        'charset' => 'utf-8',
+        # 'Authorization' => ENV['WIRECARD_OAUTH_TOKEN'],
+        'Authorization' => 'Bearer 4051205e2b5643ac860863f0433701dd_v2'
+      },
+      debug_output: STDOUT
+    })
+
+    if response.code == 200
+      if @user.update(
+        { id_wirecard_account: response["moipAccount"]["id"],
+          token_wirecard_account: response["access_token"],
+          refresh_token_wirecard_account: response["refresh_token"]})
+
+        render json: {status: 'success'}, status: :ok
+      else
+        render json: @user.errors, status: :unprocessable_entity
+      end
+    else
+      render json: response.body, status: :unprocessable_entity
     end
   end
 
