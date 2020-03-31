@@ -42,12 +42,6 @@ end
 #     end
 # end
 
-# u = User.find_by(email: 'prof@email.com')
-# if !u
-#     u = User.create(name: "Profissional", email: 'prof@email.com', password: '12345678', 
-#         password_confirmation: '12345678', user_type: :professional, cellphone: '21980808081', cpf: '12345678901')
-# end
-
 Category.destroy_all
 Category.create(id: 1, name: 'Hidráulica')
 Category.create(id: 2, name: 'Elétrica')
