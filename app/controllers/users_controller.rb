@@ -127,7 +127,9 @@ class UsersController < ApplicationController
       if @user.update(
         { id_wirecard_account: response["moipAccount"]["id"],
           token_wirecard_account: response["access_token"],
-          refresh_token_wirecard_account: response["refresh_token"]})
+          refresh_token_wirecard_account: response["refresh_token"],
+          is_new_wire_account: false
+        })
 
         render json: {status: 'success'}, status: :ok
       else
@@ -154,7 +156,8 @@ class UsersController < ApplicationController
           :email, :customer_wirecard_id,
           :birthdate, :own_id_wirecard, 
           :player_ids, :surname, :mothers_name,
-          :id_wirecard_account, :token_wirecard_account)
+          :id_wirecard_account, :token_wirecard_account,
+          :set_account, :is_new_wire_account)
     end
 
     def address_params

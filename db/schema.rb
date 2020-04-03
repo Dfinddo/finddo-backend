@@ -144,6 +144,8 @@ ActiveRecord::Schema.define(version: 2020_03_19_014638) do
     t.string "id_wirecard_account"
     t.string "token_wirecard_account"
     t.string "refresh_token_wirecard_account"
+    t.string "set_account", default: ""
+    t.boolean "is_new_wire_account", default: false
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
