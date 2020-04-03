@@ -1,6 +1,29 @@
 class UsersController < ApplicationController
-  before_action :authenticate_user!, except: [:create, :generate_access_token_professional]
-  before_action :set_user, except: [:create]
+  before_action :authenticate_user!, except: [:create, :generate_access_token_professional, :get_user]
+  before_action :set_user, except: [:create, :get_user]
+
+  # GET /users
+  def get_user
+    @user = User.find_by(email: params[:email])
+    if @user
+      render json: { error: 'Já existe um usuário com esse email.' }, status: :forbidden
+      return
+    else
+      @user = User.find_by(cellphone: params[:cellphone])
+      if @user
+        render json: { error: 'Já existe um usuário com esse telefone.' }, status: :forbidden
+        return
+      else
+        @user = User.find_by(cpf: params[:cpf])
+        if @user
+          render json: { error: 'Já existe um usuário com esse cpf.' }, status: :forbidden
+          return
+        else
+          render json: {}, status: :ok
+        end
+      end
+    end
+  end
 
   # POST /users
   def create
