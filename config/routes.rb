@@ -1,11 +1,13 @@
 Rails.application.routes.draw do
   # Users
   post 'users', to: 'users#create'
+  get 'users', to: 'users#get_user'
   put 'users/:id', to: 'users#update'
   get 'users/profile_photo/:id', to: 'users#get_profile_photo'
   put 'users/profile_photo/:id', to: 'users#set_profile_photo'
   put 'users/player_id_notifications/:id', to: 'users#update_player_id'
   delete 'users/remove_player_id_notifications/:id/:player_id', to: 'users#remove_player_id'
+  post 'users/get_token_wirecard', to: 'users#generate_access_token_professional'
 
   # Orders
   post '/orders/payment_webhook', to: 'orders#payment_webhook'
