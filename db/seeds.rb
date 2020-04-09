@@ -11,6 +11,20 @@ if !u
     User.create(name: 'Admin', email: 'admin@finddo.com.br', password: 'Finddo2019@', password_confirmation: 'Finddo2019@', user_type: :admin)
 end
 
+u = User.find_by(email: 'prof@email.com')
+if !u
+    User.create(
+        name: "Teste", email: 'prof@email.com', 
+        password: '12345678', password_confirmation: '12345678', 
+        user_type: :professional, cellphone: '21980808080', 
+        cpf: '12345678900', cep: "20921440", 
+        cidade: "Rio de Janeiro", complemento: "casa 02", 
+        rua: "Campo de São Cristóvão", estado: "RJ", 
+        birthdate: "23/02/1994", bairro: "São Cristóvão",
+        id_wirecard_account: "MPA-2E2D139AFCCC", token_wirecard_account: "046d40a7578f42e684c5befe75dad54d_v2",
+        refresh_token_wirecard_account: "940a8db9a2a0478ab48f753aeda8d0f2_v2")
+end
+
 # u = User.find_by(email: 'teste@email.com')
 # if !u
 #     u = User.create(name: "Teste", email: 'teste@email.com', password: '12345678', 
@@ -26,12 +40,6 @@ end
 #             city: 'Rio de Janeiro', state: 'RJ', number: rand(1..100)
 #         )
 #     end
-# end
-
-# u = User.find_by(email: 'prof@email.com')
-# if !u
-#     u = User.create(name: "Profissional", email: 'prof@email.com', password: '12345678', 
-#         password_confirmation: '12345678', user_type: :professional, cellphone: '21980808081', cpf: '12345678901')
 # end
 
 Category.destroy_all
