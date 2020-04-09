@@ -134,14 +134,11 @@ class UsersController < ApplicationController
 
   def generate_access_token_professional
     response = HTTParty.post("#{ENV['WIRECARD_CONNECT_URL']}", {
-    # response = HTTParty.post("https://connect-sandbox.moip.com.br/oauth/token", {
       body: "client_id=#{ENV['WIRECARD_APP_ID']}&client_secret=#{ENV['WIRECARD_CLIENT_SECRET']}&redirect_uri=#{ENV['WIRECARD_REDIRECT_URI']}&grant_type=authorization_code&code=#{params[:code]}",
-      # body: "client_id=APP-3ZE5RL6VF6OA&client_secret=5a384a3f54c7401e969bc1c9a81360bf&redirect_uri=http://192.168.1.4:4200/redirect&grant_type=authorization_code&code=#{params[:code]}",
       headers: {
         'Content-Type' => 'application/x-www-form-urlencoded',
         'charset' => 'utf-8',
         'Authorization' => ENV['WIRECARD_OAUTH_TOKEN'],
-        # 'Authorization' => 'Bearer 4051205e2b5643ac860863f0433701dd_v2'
       },
       # debug_output: STDOUT
     })

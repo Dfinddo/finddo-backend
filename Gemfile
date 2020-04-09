@@ -3,6 +3,8 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '2.5.1'
 
+# variaveis de ambiente
+gem 'dotenv-rails', groups: [:development, :test]
 # Requests externos
 gem 'httparty', '~> 0.13.7'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
