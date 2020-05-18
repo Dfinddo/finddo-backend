@@ -73,6 +73,14 @@ class OrdersController < ApplicationController
 
     @order = Order.new(order_params)
 
+    if(order_params[:address_id] == nil)
+      @address = Address.new(address_params)
+      @address.user_id = order_params[:user_id]
+
+      @address.save
+      @order.address_id = @address.id
+    end
+
     params[:images].each do |image|
       @order.images.attach(image_io(image))
     end
@@ -216,6 +224,14 @@ class OrdersController < ApplicationController
           :rate, :order_wirecard_own_id,
           :order_wirecard_id, :payment_wirecard_id,
           :hora_inicio, :hora_fim)
+    end
+
+    def address_params
+      params.require(:address)
+        .permit(
+          :cep, :complement, :district, :name,
+          :number, :selected, :street
+        )
     end
 
     def image_io(image)
