@@ -1,24 +1,29 @@
-# README
+# Finddo - Backend
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## Executando o Projeto
 
-Things you may want to cover:
+### Com Docker
 
-* Ruby version
+- Executando pela primeira vez
+  - `docker-compose build`
+  - `docker-compose up`
+- Executando outras vezes
+  - `docker-compose up`
+- Rodar as migrações
+  - `docker-compose run --rm app bundle exec rails db:migrate`
+- Rodar o seed
+  - `docker-compose run --rm app bundle exec rails db:seed`
+- Para rodar outros comandos rake
+  - `docker-compose run --rm app bundle exec ` -comando a ser executado-
 
-* System dependencies
+### Sem Docker
 
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+- Executando pela primeira vez
+  - `bundle install` para instalar as dependências
+  - `rails s`
+- Executando outras vezes
+  - `rails s`
+- Rodar as migrações
+  - `rails db:migrate`
+- Rodar o seed
+  - `rails db:seed`
