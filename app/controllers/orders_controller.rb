@@ -235,7 +235,8 @@ class OrdersController < ApplicationController
           :paid, :address_id,
           :rate, :order_wirecard_own_id,
           :order_wirecard_id, :payment_wirecard_id,
-          :hora_inicio, :hora_fim)
+          :hora_inicio, :hora_fim,
+          :user_rate)
     end
 
     def address_params

@@ -28,7 +28,9 @@ Rails.application.routes.draw do
   put '/addresses/:id', to: 'addresses#update'
   delete '/addresses/:id', to: 'addresses#destroy'
   
-  resources :categories
+  # As categorias no momento não são cadastradas por interface de adm, apenas pelo
+  # seeds.rb
+  # resources :categories
   mount_devise_token_auth_for 'User', at: 'auth'
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 end
