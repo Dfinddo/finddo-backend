@@ -38,6 +38,18 @@ class OrdersController < ApplicationController
         render json: @order.errors, status: :unprocessable_entity
       end
     end
+
+    devices = []
+    client = User.find(@order.user_id)
+    client.player_ids.each { |player| devices << player }
+    return if devices.empty?
+
+    HTTParty.post('https://onesignal.com/api/v1/notifications', body: {
+      app_id: ENV['ONE_SIGNAL_APP_ID'],
+      include_player_ids: devices,
+      data: { pedido: 'aceito' },
+      contents: { en: 'Seu pedido foi aceito por um profissional' }
+    })
   end
 
   # GET /orders/user/:user_id/active
