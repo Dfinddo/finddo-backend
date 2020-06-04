@@ -106,22 +106,7 @@ class OrdersController < ApplicationController
     end
 
     if @order.save
-      devices = []
       
-      User.where(user_type: :professional).each do |u|
-        u.player_ids.each do |pl|
-          devices << pl
-        end
-      end
-
-      if devices.length > 0
-        HTTParty.post("https://onesignal.com/api/v1/notifications", 
-            body: { 
-              app_id: ENV['ONE_SIGNAL_APP_ID'], 
-              include_player_ids: devices,
-              data: {pedido: 'novo'},
-              contents: {en: "Novo pedido disponível para atendimento"} })
-      end
 
       render json: @order, status: :created
     else
