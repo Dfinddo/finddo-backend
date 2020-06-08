@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   # Users
   post 'users', to: 'users#create'
   get 'users', to: 'users#get_user'
+  put 'users/activate', to: 'users#activate_user'
   put 'users/:id', to: 'users#update'
   get 'users/profile_photo/:id', to: 'users#get_profile_photo'
   put 'users/profile_photo/:id', to: 'users#set_profile_photo'

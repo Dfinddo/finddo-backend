@@ -22,7 +22,7 @@ class OrderSerializer < ActiveModel::Serializer
   end
 
   def professional_photo
-    if object.professional_order
+    if object.professional_order && object.professional_order.user_profile_photo
       rails_blob_path(object.professional_order.user_profile_photo.photo, only_path: true)
     else
       nil
