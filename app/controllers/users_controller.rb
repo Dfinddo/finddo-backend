@@ -109,23 +109,28 @@ class UsersController < ApplicationController
   end
 
   def update_player_id
-    @another_user = User.where("player_ids @> ARRAY[?]::varchar[]", [params[:player_id]])
+    @another_users = User.where("player_ids @> ARRAY[?]::varchar[]", [params[:player_id]]).where.not(id: @user.id)
     
     @user.player_ids << params[:player_id] unless @user.player_ids.include? params[:player_id]
 
-    if @another_user.length > 0 && @another_user != @user
-      @another_user.first.transaction do
-        @another_user.first.player_ids.delete params[:player_id]
-
-        if @another_user.first.save! && @user.save!
-          render json: @user, status: :ok
+    if @another_users.length > 0
+      User.transaction do
+        @another_users.each do |another_user|
+          another_user.player_ids.delete params[:player_id]
+          
+          if !another_user.save!
+            render json: {error: 'falha ao processar o id'}, status: :unprocessable_entity
+            return
+          end
+        end
+        if @user.save!
+            head :no_content
         else
           render json: {error: 'falha ao processar o id'}, status: :unprocessable_entity
         end
       end
-      return
     elsif @user.save
-      render json: @user, status: :ok
+      head :no_content
     else
       render json: {error: 'falha ao processar o id'}, status: :unprocessable_entity
     end
@@ -136,7 +141,7 @@ class UsersController < ApplicationController
       @user.player_ids.delete params[:player_id]
 
       if @user.save
-        return
+        head :no_content
       else
         render json: {error: 'falha ao remover o id do dispositivo do usuário'}, status: :unprocessable_entity
       end

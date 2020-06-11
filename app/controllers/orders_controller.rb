@@ -44,12 +44,17 @@ class OrdersController < ApplicationController
     client.player_ids.each { |player| devices << player }
     return if devices.empty?
 
-    HTTParty.post('https://onesignal.com/api/v1/notifications', body: {
+    print "======================================================================" + "\n"
+    print devices + "\n"
+
+    req = HTTParty.post('https://onesignal.com/api/v1/notifications', body: {
       app_id: ENV['ONE_SIGNAL_APP_ID'],
       include_player_ids: devices,
       data: { pedido: 'aceito' },
       contents: { en: 'Seu pedido foi aceito por um profissional' }
     })
+
+    print req.status + "\n"
   end
 
   # GET /orders/user/:user_id/active
@@ -114,13 +119,17 @@ class OrdersController < ApplicationController
         end
       end
 
+      print "==================================================================="
+      print devices
+
       if devices.length > 0
-        HTTParty.post("https://onesignal.com/api/v1/notifications", 
+        req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
             body: { 
               app_id: ENV['ONE_SIGNAL_APP_ID'], 
               include_player_ids: devices,
               data: {pedido: 'novo'},
               contents: {en: "Novo pedido disponível para atendimento"} })
+        print req.status  + "\n"
       end
 
       render json: @order, status: :created
@@ -147,13 +156,20 @@ class OrdersController < ApplicationController
         status_novo = "Serviço em execução"
       end
 
+      print old_status + "\n"
+      print status_novo + "\n"
+      print "==============================================================="  + "\n"
+      print devices  + "\n"
+
       if status_novo != "" && status_novo != old_status
-        HTTParty.post("https://onesignal.com/api/v1/notifications", 
+        req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
         body: { 
           app_id: ENV['ONE_SIGNAL_APP_ID'], 
           include_player_ids: devices,
           data: {pedido: 'status'},
           contents: {en: "#{@order.category.name}\n#{status_novo}"} })
+
+        print req.status + "\n"
       end
 
       if @order.user_rate > 0
@@ -199,12 +215,17 @@ class OrdersController < ApplicationController
           devices << el
         end
 
-        HTTParty.post("https://onesignal.com/api/v1/notifications", 
+        print "===============================================================" + "\n"
+        print devices + "\n"
+
+        req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
           body: { 
             app_id: ENV['ONE_SIGNAL_APP_ID'], 
             include_player_ids: devices,
             data: {pagamento: 'aceito'},
             contents: {en: "Pagamento recebido\nObrigado por usar o Finddo!"} })
+
+        print req.status + "\n"
       end
     elsif params[:event] == "PAYMENT.CANCELLED"
       order_id = params[:resource][:payment][:_links][:order][:title];
@@ -221,12 +242,17 @@ class OrdersController < ApplicationController
         devices << el
       end
 
-      HTTParty.post("https://onesignal.com/api/v1/notifications", 
+      print "==================================================" + "\n"
+      print devices + "\n"
+
+      req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
         body: { 
           app_id: ENV['ONE_SIGNAL_APP_ID'], 
           include_player_ids: devices,
           data: {pagamento: 'cancelado'},
           contents: {en: "Pagamento não efetuado\nFavor revisar informações de pagamento"} })
+
+      print req.status + "\n"
     end
   end
 
