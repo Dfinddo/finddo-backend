@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   # Users
   post 'users', to: 'users#create'
   get 'users', to: 'users#get_user'
+  put 'users/activate', to: 'users#activate_user'
   put 'users/:id', to: 'users#update'
   get 'users/profile_photo/:id', to: 'users#get_profile_photo'
   put 'users/profile_photo/:id', to: 'users#set_profile_photo'
@@ -28,7 +29,9 @@ Rails.application.routes.draw do
   put '/addresses/:id', to: 'addresses#update'
   delete '/addresses/:id', to: 'addresses#destroy'
   
-  resources :categories
+  # As categorias no momento não são cadastradas por interface de adm, apenas pelo
+  # seeds.rb
+  # resources :categories
   mount_devise_token_auth_for 'User', at: 'auth'
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 end

@@ -156,6 +156,18 @@ class OrdersController < ApplicationController
           contents: {en: "#{@order.category.name}\n#{status_novo}"} })
       end
 
+      if @order.user_rate > 0
+        order_user = @order.user
+        order_user.rate = Order.where(user: @order.user).average(:user_rate)
+        order_user.save
+      end
+
+      if @order.rate > 0
+        professional_user = @order.professional_order
+        professional_user.rate = Order.where(professional_order: professional_user).average(:rate)
+        professional_user.save
+      end
+
       render json: @order
     else
       render json: @order.errors, status: :unprocessable_entity
@@ -235,7 +247,8 @@ class OrdersController < ApplicationController
           :paid, :address_id,
           :rate, :order_wirecard_own_id,
           :order_wirecard_id, :payment_wirecard_id,
-          :hora_inicio, :hora_fim)
+          :hora_inicio, :hora_fim,
+          :user_rate)
     end
 
     def address_params

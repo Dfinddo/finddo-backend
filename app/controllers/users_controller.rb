@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
   before_action :authenticate_user!, except: [:create, :generate_access_token_professional, :get_user]
-  before_action :set_user, except: [:create, :get_user]
+  before_action :set_user, except: [:create, :get_user, :activate_user]
 
   # GET /users
   def get_user
@@ -29,6 +29,7 @@ class UsersController < ApplicationController
   def create
     @user = User.new(user_params)
     @user.player_ids = params[:player_ids]
+    @user.activated = true if @user.user_type == "user"
 
     if @user.save
       @user.addresses.build(address_params)
@@ -67,6 +68,16 @@ class UsersController < ApplicationController
   def update
     if @user.update(user_params)
       render json: @user
+    else
+      render json: @user.errors, status: :unprocessable_entity
+    end
+  end
+
+  def activate_user
+    @user = User.find_by(cellphone: params[:cellphone])
+
+    if @user.update(activated: params[:activated])
+      head :no_content
     else
       render json: @user.errors, status: :unprocessable_entity
     end
@@ -177,7 +188,8 @@ class UsersController < ApplicationController
           :birthdate, :own_id_wirecard, 
           :player_ids, :surname, :mothers_name,
           :id_wirecard_account, :token_wirecard_account,
-          :set_account, :is_new_wire_account)
+          :set_account, :is_new_wire_account,
+          :activated)
     end
 
     def address_params
