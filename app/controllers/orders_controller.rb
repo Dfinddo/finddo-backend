@@ -66,7 +66,10 @@ class OrdersController < ApplicationController
 
   # GET /orders/available
   def available_orders
-    @orders = Order.where({professional_order: nil}).order(urgency: :asc).order(start_order: :asc)
+    @orders = Order.where({professional_order: nil})
+      .where.not(order_status: :finalizado)
+      .where.not(order_status: :cancelado)
+      .order(urgency: :asc).order(start_order: :asc)
 
     render json: @orders
   end
@@ -104,10 +107,10 @@ class OrdersController < ApplicationController
 
     # quando o pedido não é urgente
     if !@order.start_order
-      @order.start_order = (DateTime.now - 3.hours)
+      @order.start_order = (DateTime.now)
     end
     if !@order.end_order
-      @order.end_order = @order.start_order + 7.days - 3.hours
+      @order.end_order = @order.start_order + 7.days
     end
 
     if @order.save
