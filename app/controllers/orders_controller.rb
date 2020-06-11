@@ -102,10 +102,10 @@ class OrdersController < ApplicationController
 
     # quando o pedido não é urgente
     if !@order.start_order
-      @order.start_order = (DateTime.now)
+      @order.start_order = (DateTime.now - 3.hours)
     end
     if !@order.end_order
-      @order.end_order = @order.start_order + 7.days
+      @order.end_order = @order.start_order + 7.days - 3.hours
     end
 
     if @order.save
@@ -202,7 +202,7 @@ class OrdersController < ApplicationController
           devices << el
         end
 
-        req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
+        HTTParty.post("https://onesignal.com/api/v1/notifications", 
           body: { 
             app_id: ENV['ONE_SIGNAL_APP_ID'], 
             include_player_ids: devices,
