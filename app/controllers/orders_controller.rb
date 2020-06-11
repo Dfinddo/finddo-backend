@@ -54,7 +54,7 @@ class OrdersController < ApplicationController
       contents: { en: 'Seu pedido foi aceito por um profissional' }
     })
 
-    print req.status + "\n"
+    print req.code + "\n"
   end
 
   # GET /orders/user/:user_id/active
@@ -132,7 +132,7 @@ class OrdersController < ApplicationController
               include_player_ids: devices,
               data: {pedido: 'novo'},
               contents: {en: "Novo pedido disponível para atendimento"} })
-        print req.status  + "\n"
+        print req.code  + "\n"
       end
 
       render json: @order, status: :created
@@ -172,7 +172,7 @@ class OrdersController < ApplicationController
           data: {pedido: 'status'},
           contents: {en: "#{@order.category.name}\n#{status_novo}"} })
 
-        print req.status + "\n"
+        print req.code + "\n"
       end
 
       if @order.user_rate > 0
@@ -228,7 +228,7 @@ class OrdersController < ApplicationController
             data: {pagamento: 'aceito'},
             contents: {en: "Pagamento recebido\nObrigado por usar o Finddo!"} })
 
-        print req.status + "\n"
+        print req.code + "\n"
       end
     elsif params[:event] == "PAYMENT.CANCELLED"
       order_id = params[:resource][:payment][:_links][:order][:title];
@@ -255,7 +255,7 @@ class OrdersController < ApplicationController
           data: {pagamento: 'cancelado'},
           contents: {en: "Pagamento não efetuado\nFavor revisar informações de pagamento"} })
 
-      print req.status + "\n"
+      print req.code + "\n"
     end
   end
 
