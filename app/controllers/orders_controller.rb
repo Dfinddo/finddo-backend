@@ -61,7 +61,10 @@ class OrdersController < ApplicationController
 
   # GET /orders/available
   def available_orders
-    @orders = Order.where({professional_order: nil}).order(urgency: :asc).order(start_order: :asc)
+    @orders = Order.where({professional_order: nil})
+      .where.not(order_status: :finalizado)
+      .where.not(order_status: :cancelado)
+      .order(urgency: :asc).order(start_order: :asc)
 
     render json: @orders
   end
@@ -147,7 +150,7 @@ class OrdersController < ApplicationController
         status_novo = "Serviço em execução"
       end
 
-      if status_novo != "" && status_novo != old_status
+      if status_novo != "" && @order.order_status != old_status
         HTTParty.post("https://onesignal.com/api/v1/notifications", 
         body: { 
           app_id: ENV['ONE_SIGNAL_APP_ID'], 
