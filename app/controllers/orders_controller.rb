@@ -46,6 +46,7 @@ class OrdersController < ApplicationController
 
     print "======================================================================" + "\n"
     print devices.to_s + "\n"
+    print ENV['ONE_SIGNAL_APP_ID'] + "\n"
 
     req = HTTParty.post('https://onesignal.com/api/v1/notifications', body: {
       app_id: ENV['ONE_SIGNAL_APP_ID'],
@@ -124,6 +125,7 @@ class OrdersController < ApplicationController
 
       print "===================================================================" + "\n"
       print devices.to_s + "\n"
+    print ENV['ONE_SIGNAL_APP_ID'] + "\n"
 
       if devices.length > 0
         req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
@@ -162,7 +164,8 @@ class OrdersController < ApplicationController
       print old_status + "\n"
       print status_novo + "\n"
       print "==============================================================="  + "\n"
-      print devices.to_s  + "\n"
+      print devices.to_s + "\n"
+    print ENV['ONE_SIGNAL_APP_ID'] + "\n"
 
       if status_novo != "" && status_novo != old_status
         req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
@@ -220,6 +223,7 @@ class OrdersController < ApplicationController
 
         print "===============================================================" + "\n"
         print devices.to_s + "\n"
+    print ENV['ONE_SIGNAL_APP_ID'] + "\n"
 
         req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
           body: { 
@@ -247,6 +251,7 @@ class OrdersController < ApplicationController
 
       print "==================================================" + "\n"
       print devices.to_s + "\n"
+    print ENV['ONE_SIGNAL_APP_ID'] + "\n"
 
       req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
         body: { 
