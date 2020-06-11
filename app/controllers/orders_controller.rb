@@ -162,12 +162,13 @@ class OrdersController < ApplicationController
       end
 
       print old_status + "\n"
+      print @order.order_status + "\n"
       print status_novo + "\n"
       print "==============================================================="  + "\n"
       print devices.to_s + "\n"
     print ENV['ONE_SIGNAL_APP_ID'] + "\n"
 
-      if status_novo != "" && status_novo != old_status
+      if status_novo != "" && @order.order_status != old_status
         req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
         body: { 
           app_id: ENV['ONE_SIGNAL_APP_ID'], 
