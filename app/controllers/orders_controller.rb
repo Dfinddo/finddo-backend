@@ -54,16 +54,27 @@ class OrdersController < ApplicationController
 
   # GET /orders/user/:user_id/active
   def user_active_orders
-    @orders = Order.where user_id: params[:user_id]
+    @orders = Order
+      .includes(:address, :professional_order, 
+                :category, :user)
+      .with_attached_images
+      .where(user_id: params[:user_id])
+      .order(order_status: :asc).order(start_order: :asc)
 
     render json: @orders
   end
 
   # GET /orders/available
   def available_orders
-    @orders = Order.where({professional_order: nil})
+    @orders = Order
+      .includes(:address, :professional_order, 
+                :category, :user)
+      .with_attached_images
+      .where({professional_order: nil})
       .where.not(order_status: :finalizado)
       .where.not(order_status: :cancelado)
+      .where.not(order_status: :processando_pagamento)
+      .where.not(order_status: :recusado)
       .order(urgency: :asc).order(start_order: :asc)
 
     render json: @orders
@@ -71,7 +82,11 @@ class OrdersController < ApplicationController
 
   # GET /orders/active_orders_professional/:user_id
   def associated_active_orders
-    @orders = Order.where({professional: params[:user_id]})
+    @orders = Order
+      .includes(:address, :professional_order, 
+                :category, :user)
+      .with_attached_images
+      .where({professional: params[:user_id]})
 
     render json: @orders
   end
