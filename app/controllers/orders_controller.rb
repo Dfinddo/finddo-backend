@@ -2,40 +2,36 @@ class OrdersController < ApplicationController
   before_action :authenticate_user!, except: [:payment_webhook]
   before_action :set_order, only: [:show, :update, :destroy, :associate_professional]
 
-  # GET /orders
-  def index
-    @orders = Order.all
-
-    render json: @orders
-  end
-
   # GET /orders/1
   def show
     render json: @order
   end
 
-  # PUT /orders/associate/1/2
+  # PUT /orders/associate/1/2 - /orders/associate/:id/:professional_id
   def associate_professional
-    @user = User.find(params[:professional_id])
+    @user = User.find_by(id: params[:professional_id], user_type: :professional)
 
     if !@user
-      render json: {error: 'profissional não encontrado'}, status: :not_found
+      render json: {error: 'profissional não encontrado'}, status: :forbidden
       return
     end
 
     if @order.professional_order
-      render json: {error: 'pedido já possui profissional'}, status: :not_found
+      render json: {error: 'pedido já possui profissional'}, status: :forbidden
       return
     end
 
     @order.with_lock do
       @order.professional_order = @user
+      # TODO: essa linha não tem sentido, o objetivo desse endpoint é apenas
+      # modificar o estado do status pedido para a_caminho
       @order.assign_attributes(order_params)
       @order.order_status = :a_caminho
       if @order.save
         render json: @order
       else
         render json: @order.errors, status: :unprocessable_entity
+        return
       end
     end
 
@@ -115,12 +111,12 @@ class OrdersController < ApplicationController
       @order.images.attach(image_io(image))
     end
 
-    # quando o pedido não é urgente
+    # TODO: esse if também não é mais utilizado, remover
     if !@order.start_order
       @order.start_order = (DateTime.now - 3.hours)
     end
     if !@order.end_order
-      @order.end_order = @order.start_order + 7.days - 3.hours
+      @order.end_order = @order.start_order + 7.days
     end
 
     if @order.save
@@ -197,6 +193,7 @@ class OrdersController < ApplicationController
     @order.destroy
   end
 
+  # POST /orders/payment_webhook
   def payment_webhook
     order_id = params[:resource][:payment][:_links][:order][:title];
     if params[:event] == "PAYMENT.IN_ANALYSIS"
