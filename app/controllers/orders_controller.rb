@@ -2,40 +2,36 @@ class OrdersController < ApplicationController
   before_action :authenticate_user!, except: [:payment_webhook]
   before_action :set_order, only: [:show, :update, :destroy, :associate_professional]
 
-  # GET /orders
-  def index
-    @orders = Order.all
-
-    render json: @orders
-  end
-
   # GET /orders/1
   def show
     render json: @order
   end
 
-  # PUT /orders/associate/1/2
+  # PUT /orders/associate/1/2 - /orders/associate/:id/:professional_id
   def associate_professional
-    @user = User.find(params[:professional_id])
+    @user = User.find_by(id: params[:professional_id], user_type: :professional)
 
     if !@user
-      render json: {error: 'profissional não encontrado'}, status: :not_found
+      render json: {error: 'profissional não encontrado'}, status: :forbidden
       return
     end
 
     if @order.professional_order
-      render json: {error: 'pedido já possui profissional'}, status: :not_found
+      render json: {error: 'pedido já possui profissional'}, status: :forbidden
       return
     end
 
     @order.with_lock do
       @order.professional_order = @user
+      # TODO: essa linha não tem sentido, o objetivo desse endpoint é apenas
+      # modificar o estado do status pedido para a_caminho
       @order.assign_attributes(order_params)
       @order.order_status = :a_caminho
       if @order.save
         render json: @order
       else
         render json: @order.errors, status: :unprocessable_entity
+        return
       end
     end
 
@@ -54,21 +50,39 @@ class OrdersController < ApplicationController
 
   # GET /orders/user/:user_id/active
   def user_active_orders
-    @orders = Order.where user_id: params[:user_id]
+    @orders = Order
+      .includes(:address, :professional_order, 
+                :category, :user)
+      .with_attached_images
+      .where(user_id: params[:user_id])
+      .order(order_status: :asc).order(start_order: :asc)
 
     render json: @orders
   end
 
   # GET /orders/available
   def available_orders
-    @orders = Order.where({professional_order: nil}).order(urgency: :asc).order(start_order: :asc)
+    @orders = Order
+      .includes(:address, :professional_order, 
+                :category, :user)
+      .with_attached_images
+      .where({professional_order: nil})
+      .where.not(order_status: :finalizado)
+      .where.not(order_status: :cancelado)
+      .where.not(order_status: :processando_pagamento)
+      .where.not(order_status: :recusado)
+      .order(urgency: :asc).order(start_order: :asc)
 
     render json: @orders
   end
 
   # GET /orders/active_orders_professional/:user_id
   def associated_active_orders
-    @orders = Order.where({professional: params[:user_id]})
+    @orders = Order
+      .includes(:address, :professional_order, 
+                :category, :user)
+      .with_attached_images
+      .where({professional: params[:user_id]})
 
     render json: @orders
   end
@@ -97,12 +111,12 @@ class OrdersController < ApplicationController
       @order.images.attach(image_io(image))
     end
 
-    # quando o pedido não é urgente
+    # TODO: esse if também não é mais utilizado, remover
     if !@order.start_order
       @order.start_order = (DateTime.now - 3.hours)
     end
     if !@order.end_order
-      @order.end_order = @order.start_order + 7.days - 3.hours
+      @order.end_order = @order.start_order + 7.days
     end
 
     if @order.save
@@ -147,13 +161,25 @@ class OrdersController < ApplicationController
         status_novo = "Serviço em execução"
       end
 
-      if status_novo != "" && status_novo != old_status
+      if status_novo != "" && @order.order_status != old_status
         HTTParty.post("https://onesignal.com/api/v1/notifications", 
         body: { 
           app_id: ENV['ONE_SIGNAL_APP_ID'], 
           include_player_ids: devices,
           data: {pedido: 'status'},
           contents: {en: "#{@order.category.name}\n#{status_novo}"} })
+      end
+
+      if @order.user_rate > 0
+        order_user = @order.user
+        order_user.rate = Order.where(user: @order.user).average(:user_rate)
+        order_user.save
+      end
+
+      if @order.rate > 0
+        professional_user = @order.professional_order
+        professional_user.rate = Order.where(professional_order: professional_user).average(:rate)
+        professional_user.save
       end
 
       render json: @order
@@ -167,6 +193,7 @@ class OrdersController < ApplicationController
     @order.destroy
   end
 
+  # POST /orders/payment_webhook
   def payment_webhook
     order_id = params[:resource][:payment][:_links][:order][:title];
     if params[:event] == "PAYMENT.IN_ANALYSIS"
@@ -235,7 +262,8 @@ class OrdersController < ApplicationController
           :paid, :address_id,
           :rate, :order_wirecard_own_id,
           :order_wirecard_id, :payment_wirecard_id,
-          :hora_inicio, :hora_fim)
+          :hora_inicio, :hora_fim,
+          :user_rate)
     end
 
     def address_params

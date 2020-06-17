@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
   before_action :authenticate_user!, except: [:create, :generate_access_token_professional, :get_user]
-  before_action :set_user, except: [:create, :get_user]
+  before_action :set_user, except: [:create, :get_user, :activate_user]
 
   # GET /users
   def get_user
@@ -29,6 +29,7 @@ class UsersController < ApplicationController
   def create
     @user = User.new(user_params)
     @user.player_ids = params[:player_ids]
+    @user.activated = true if @user.user_type == "user"
 
     if @user.save
       @user.addresses.build(address_params)
@@ -72,6 +73,16 @@ class UsersController < ApplicationController
     end
   end
 
+  def activate_user
+    @user = User.find_by(cellphone: params[:cellphone])
+
+    if @user.update(activated: params[:activated])
+      head :no_content
+    else
+      render json: @user.errors, status: :unprocessable_entity
+    end
+  end
+
   def get_profile_photo
     if @user.user_profile_photo
       render json: @user.user_profile_photo
@@ -98,23 +109,28 @@ class UsersController < ApplicationController
   end
 
   def update_player_id
-    @another_user = User.where("player_ids @> ARRAY[?]::varchar[]", [params[:player_id]])
+    @another_users = User.where("player_ids @> ARRAY[?]::varchar[]", [params[:player_id]]).where.not(id: @user.id)
     
     @user.player_ids << params[:player_id] unless @user.player_ids.include? params[:player_id]
 
-    if @another_user.length > 0 && @another_user != @user
-      @another_user.first.transaction do
-        @another_user.first.player_ids.delete params[:player_id]
-
-        if @another_user.first.save! && @user.save!
-          render json: @user, status: :ok
+    if @another_users.length > 0
+      User.transaction do
+        @another_users.each do |another_user|
+          another_user.player_ids.delete params[:player_id]
+          
+          if !another_user.save!
+            render json: {error: 'falha ao processar o id'}, status: :unprocessable_entity
+            return
+          end
+        end
+        if @user.save!
+            head :no_content
         else
           render json: {error: 'falha ao processar o id'}, status: :unprocessable_entity
         end
       end
-      return
     elsif @user.save
-      render json: @user, status: :ok
+      head :no_content
     else
       render json: {error: 'falha ao processar o id'}, status: :unprocessable_entity
     end
@@ -125,7 +141,7 @@ class UsersController < ApplicationController
       @user.player_ids.delete params[:player_id]
 
       if @user.save
-        return
+        head :no_content
       else
         render json: {error: 'falha ao remover o id do dispositivo do usuário'}, status: :unprocessable_entity
       end
@@ -177,7 +193,8 @@ class UsersController < ApplicationController
           :birthdate, :own_id_wirecard, 
           :player_ids, :surname, :mothers_name,
           :id_wirecard_account, :token_wirecard_account,
-          :set_account, :is_new_wire_account)
+          :set_account, :is_new_wire_account,
+          :activated)
     end
 
     def address_params
