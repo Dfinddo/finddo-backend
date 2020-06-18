@@ -129,15 +129,13 @@ class OrdersController < ApplicationController
       end
 
       if devices.length > 0
-        req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
+        HTTParty.post("https://onesignal.com/api/v1/notifications", 
             body: { 
               app_id: ENV['ONE_SIGNAL_APP_ID'], 
               include_player_ids: devices,
               data: {pedido: 'novo'},
               contents: {en: "Novo pedido disponível para atendimento"} })
         
-        print req.code
-        print "==================================================================="
       end
 
       render json: @order, status: :created
