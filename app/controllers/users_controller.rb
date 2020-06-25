@@ -109,9 +109,14 @@ class UsersController < ApplicationController
   end
 
   def update_player_id
+    if params[:player_id].nil? || params[:player_id].empty? || params[:player_id].length < 10
+      render json: { erro: 'Player id inválido' }, status: :bad_request
+      return
+    end
+
     @another_users = User.where("player_ids @> ARRAY[?]::varchar[]", [params[:player_id]]).where.not(id: @user.id)
     
-    @user.player_ids << params[:player_id] unless @user.player_ids.include? params[:player_id]
+    @user.player_ids = [params[:player_id]] unless @user.player_ids.include? params[:player_id]
 
     if @another_users.length > 0
       User.transaction do
