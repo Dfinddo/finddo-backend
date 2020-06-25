@@ -36,5 +36,7 @@ Rails.application.routes.draw do
   # As categorias no momento não são cadastradas por interface de adm, apenas pelo
   # seeds.rb
   # resources :categories
-  mount_devise_token_auth_for 'User', at: 'auth'
+  mount_devise_token_auth_for 'User', at: 'auth', controllers: {
+    sessions:  'sessions'
+  }
 end
