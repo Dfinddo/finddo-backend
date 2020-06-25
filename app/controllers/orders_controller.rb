@@ -300,8 +300,11 @@ class OrdersController < ApplicationController
             app_id: ENV['ONE_SIGNAL_APP_ID'], 
             include_player_ids: devices,
             data: payload,
-            contents: { en: "Seu pedido recebeu um orçamento." } })
+            contents: { en: "Seu pedido recebeu um orçamento." } },
+            :debug_output => $stdout)
       
+      print "===================================="
+      print req
       if req.code == 200
         render json: payload, status: :ok
       else
