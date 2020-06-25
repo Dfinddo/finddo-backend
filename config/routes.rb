@@ -14,6 +14,8 @@ Rails.application.routes.draw do
   post 'users/get_token_wirecard', to: 'users#generate_access_token_professional'
 
   # Orders
+  post 'orders/budget_approve', to: 'orders#budget_approve'
+  post '/orders/propose_budget', to: 'orders#propose_budget'
   post '/orders/payment_webhook', to: 'orders#payment_webhook'
   get '/orders/available', to: 'orders#available_orders'
   put '/orders/associate/:id/:professional_id', to: 'orders#associate_professional'
