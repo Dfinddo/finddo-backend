@@ -263,6 +263,8 @@ class OrdersController < ApplicationController
             contents: { en: "O orçamento para o pedido foi aprovado." } })
       
       if req.code == 200
+        @order.budget.destroy
+        @order.reload
         render json: payload, status: :ok
       else
         render json: { erro: 'Falha ao enviar a notificação.' }, status: :internal_server_error
@@ -277,6 +279,8 @@ class OrdersController < ApplicationController
             contents: { en: "O orçamento para o pedido foi recusado." } })
   
         if req.code == 200
+          @order.budget.destroy
+          @order.reload
           render json: payload, status: :ok
         else
           render json: { erro: 'Falha ao enviar a notificação.' }, status: :internal_server_error
@@ -287,12 +291,14 @@ class OrdersController < ApplicationController
 
   def propose_budget
     payload = {}
-    payload[:budget] = params[:budget]
+    budget = Budget.create(order: @order, budget: params[:budget])
+    payload[:budget] = budget
     payload[:order] = OrderSerializer.new @order
 
     devices = @order.user.player_ids
 
     if devices.empty?
+      budget.destroy
       render json: { erro: 'O usuário não está logado.' }, status: :unprocessable_entity
     else
       req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
