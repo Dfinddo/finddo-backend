@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  budget: MyString
+  accepted: false
+  order: one
+
+two:
+  budget: MyString
+  accepted: false
+  order: two

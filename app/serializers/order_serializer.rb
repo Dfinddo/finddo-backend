@@ -10,6 +10,7 @@ class OrderSerializer < ActiveModel::Serializer
   has_one :professional_order
   has_one :user
   has_one :address
+  has_one :budget
 
   def images
     urls = []

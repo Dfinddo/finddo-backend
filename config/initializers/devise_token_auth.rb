@@ -55,4 +55,5 @@ DeviseTokenAuth.setup do |config|
   # do so by enabling this flag. NOTE: This feature is highly experimental!
   # config.enable_standard_devise_support = false
   config.require_client_password_reset_token = true
+  config.remove_tokens_after_password_reset = true
 end

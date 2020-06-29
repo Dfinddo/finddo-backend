@@ -1,5 +1,6 @@
 class Order < ApplicationRecord
   has_many_attached :images
+  has_one :budget, dependent: :destroy
 
   belongs_to :category
   belongs_to :user

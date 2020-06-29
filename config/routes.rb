@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   # A rota / nesta api não tem utilidade
-  root to: proc { [404, {}, ["Not found."]] }
+  root to: proc { [403, {}, ["Forbidden"]] }
 
   # Users
   post 'users', to: 'users#create'
@@ -14,6 +14,8 @@ Rails.application.routes.draw do
   post 'users/get_token_wirecard', to: 'users#generate_access_token_professional'
 
   # Orders
+  post 'orders/budget_approve', to: 'orders#budget_approve'
+  post '/orders/propose_budget', to: 'orders#propose_budget'
   post '/orders/payment_webhook', to: 'orders#payment_webhook'
   get '/orders/available', to: 'orders#available_orders'
   put '/orders/associate/:id/:professional_id', to: 'orders#associate_professional'
@@ -34,5 +36,7 @@ Rails.application.routes.draw do
   # As categorias no momento não são cadastradas por interface de adm, apenas pelo
   # seeds.rb
   # resources :categories
-  mount_devise_token_auth_for 'User', at: 'auth'
+  mount_devise_token_auth_for 'User', at: 'auth', controllers: {
+    sessions:  'sessions'
+  }
 end

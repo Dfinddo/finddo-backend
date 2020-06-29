@@ -1,6 +1,6 @@
 class OrdersController < ApplicationController
   before_action :authenticate_user!, except: [:payment_webhook]
-  before_action :set_order, only: [:show, :update, :destroy, :associate_professional]
+  before_action :set_order, only: [:show, :update, :destroy, :associate_professional, :propose_budget, :budget_approve]
 
   # GET /orders/1
   def show
@@ -243,6 +243,85 @@ class OrdersController < ApplicationController
           include_player_ids: devices,
           data: {pagamento: 'cancelado'},
           contents: {en: "Pagamento não efetuado\nFavor revisar informações de pagamento"} })
+    end
+  end
+
+  def budget_approve
+    payload = {}
+    payload[:accepted] = params[:accepted]
+    payload[:order] = OrderSerializer.new @order
+
+    devices = @order.professional_order.player_ids
+
+    if params[:accepted] == nil
+      render json: { erro: 'accepted deve ser true ou false' }, status: :internal_server_error
+      return
+    end
+
+    if devices.empty?
+      render json: { erro: 'O profissional não está logado.' }, status: :unprocessable_entity
+    elsif payload[:accepted]
+      req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
+          body: { 
+            app_id: ENV['ONE_SIGNAL_APP_ID'], 
+            include_player_ids: devices,
+            data: payload,
+            contents: { en: "O orçamento para o pedido foi aprovado." } })
+      
+      if req.code == 200
+        @order.budget.update(accepted: true)
+        render json: payload, status: :ok
+      else
+        render json: { erro: 'Falha ao enviar a notificação.' }, status: :internal_server_error
+      end
+    else
+      if @order.update({ order_status: :cancelado })
+        req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
+          body: { 
+            app_id: ENV['ONE_SIGNAL_APP_ID'], 
+            include_player_ids: devices,
+            data: payload,
+            contents: { en: "O orçamento para o pedido foi recusado." } })
+  
+        if req.code == 200
+          @order.budget.update(accepted: false)
+          render json: payload, status: :ok
+        else
+          render json: { erro: 'Falha ao enviar a notificação.' }, status: :internal_server_error
+        end
+      end
+    end
+  end
+
+  def propose_budget
+    payload = {}
+    @order.budget.destroy if @order.budget
+    budget = Budget.create(order: @order, budget: params[:budget])
+    payload[:budget] = budget
+    @order.reload
+    payload[:order] = OrderSerializer.new @order
+
+    devices = @order.user.player_ids
+
+    if devices.empty?
+      budget.destroy
+      render json: { erro: 'O usuário não está logado.' }, status: :unprocessable_entity
+    else
+      req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
+          body: { 
+            app_id: ENV['ONE_SIGNAL_APP_ID'], 
+            include_player_ids: devices,
+            data: payload,
+            contents: { en: "Seu pedido recebeu um orçamento." } },
+            :debug_output => $stdout)
+      
+      print "===================================="
+      print req
+      if req.code == 200
+        render json: payload, status: :ok
+      else
+        render json: { erro: 'Falha ao enviar a notificação.' }, status: :internal_server_error
+      end
     end
   end
 
