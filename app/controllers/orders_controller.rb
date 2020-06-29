@@ -247,14 +247,19 @@ class OrdersController < ApplicationController
 
   def budget_approve
     payload = {}
-    payload[:approved] = params[:approved]
+    payload[:accepted] = params[:accepted]
     payload[:order] = OrderSerializer.new @order
 
     devices = @order.professional_order.player_ids
 
+    if params[:accepted] == nil
+      render json: { erro: 'accepted deve ser true ou false' }, status: :internal_server_error
+      return
+    end
+
     if devices.empty?
       render json: { erro: 'O profissional não está logado.' }, status: :unprocessable_entity
-    elsif payload[:approved]
+    elsif payload[:accepted]
       req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
           body: { 
             app_id: ENV['ONE_SIGNAL_APP_ID'], 
@@ -263,8 +268,7 @@ class OrdersController < ApplicationController
             contents: { en: "O orçamento para o pedido foi aprovado." } })
       
       if req.code == 200
-        @order.budget.destroy
-        @order.reload
+        @order.budget.update(accepted: true)
         render json: payload, status: :ok
       else
         render json: { erro: 'Falha ao enviar a notificação.' }, status: :internal_server_error
@@ -279,8 +283,7 @@ class OrdersController < ApplicationController
             contents: { en: "O orçamento para o pedido foi recusado." } })
   
         if req.code == 200
-          @order.budget.destroy
-          @order.reload
+          @order.budget.update(accepted: false)
           render json: payload, status: :ok
         else
           render json: { erro: 'Falha ao enviar a notificação.' }, status: :internal_server_error
@@ -291,8 +294,10 @@ class OrdersController < ApplicationController
 
   def propose_budget
     payload = {}
+    @order.budget.destroy if @order.budget
     budget = Budget.create(order: @order, budget: params[:budget])
     payload[:budget] = budget
+    @order.reload
     payload[:order] = OrderSerializer.new @order
 
     devices = @order.user.player_ids
