@@ -4,13 +4,13 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '2.7.1'
 
 # variaveis de ambiente
-gem 'dotenv-rails', groups: [:development, :test]
+gem 'dotenv-rails', '2.7.5', groups: [:development, :test]
 # Requests externos
-gem 'httparty', '~> 0.13.7'
+gem 'httparty', '0.18.1'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 6.0'
+gem 'rails', '6.0.3.2'
 # Use postgresql as the database for Active Record
-gem 'pg', '>= 0.18', '< 2.0'
+gem 'pg', '1.2.3'
 # Use Puma as the app server
 gem 'puma', '4.3.5'
 # Token based authentication
@@ -20,7 +20,7 @@ gem 'active_model_serializers'
 # Generate Fake data
 gem 'faker', '2.10.1'
 # Bucket S3 to store files
-gem "aws-sdk-s3", require: false
+gem 'aws-sdk-s3', '1.74.0', require: false
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 # gem 'jbuilder', '~> 2.5'
 # Use Redis adapter to run Action Cable in production
@@ -38,7 +38,7 @@ gem "aws-sdk-s3", require: false
 gem 'bootsnap', '1.4.6', require: false
 
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
-gem 'rack-cors', :require => 'rack/cors'
+gem 'rack-cors', '1.1.1', :require => 'rack/cors'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
