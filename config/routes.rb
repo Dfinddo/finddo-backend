@@ -39,4 +39,10 @@ Rails.application.routes.draw do
   mount_devise_token_auth_for 'User', at: 'auth', controllers: {
     sessions:  'sessions'
   }
+
+  namespace :api do
+    namespace :v2 do
+      post '/login', to: 'auth#login'
+    end
+  end
 end

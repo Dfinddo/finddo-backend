@@ -3,6 +3,8 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '2.7.1'
 
+# geração de tokens jwt
+gem 'jwt', '2.2.1'
 # variaveis de ambiente
 gem 'dotenv-rails', '2.7.5', groups: [:development, :test]
 # Requests externos
