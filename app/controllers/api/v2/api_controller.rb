@@ -29,6 +29,8 @@ module Api::V2
         rescue JWT::DecodeError
           []
         end
+      else
+        []
       end
     end
 
