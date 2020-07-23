@@ -1,8 +1,9 @@
 class Api::V2::OrdersController < Api::V2::ApiController
+  before_action :set_services
   before_action :require_login, except: [:payment_webhook]
   before_action :set_order, only: [:show, :update, :destroy, :associate_professional, :propose_budget, :budget_approve]
 
-  # GET /orders/1
+  # GET api/v2/orders/:id
   def show
     render json: @order
   end
@@ -326,9 +327,20 @@ class Api::V2::OrdersController < Api::V2::ApiController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
+
+    def set_services
+      @payment_gateway_service = ServicesModule::V2::PaymentGatewayService.new
+      @notification_service = ServicesModule::V2::NotificationService.new
+      @order_service = ServicesModule::V2::OrdersService.new
+    end
+
     def set_order
-      @order = Order.find(params[:id])
+      @order = @order_service.find_order(params[:id])
+
+      if @order.nil?
+        render json: { error: 'Pedido não encontrado' }, status: :not_found
+        return
+      end
     end
 
     # Only allow a trusted parameter "white list" through.

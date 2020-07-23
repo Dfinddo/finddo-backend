@@ -1,6 +1,7 @@
 module Api::V2
   class ApiController < ApplicationController
-    
+    include ServicesModule::V2
+
     def encode_token(payload)
       exp = Time.zone.now.to_i + 30 * 24 * 3600 # 30 dias
       payload[:exp] = exp
@@ -11,7 +12,11 @@ module Api::V2
       decoded_hash = decoded_token
       if !decoded_hash.empty?
         user_id = decoded_hash[0]['user_id']
-        @user = User.find_by(id: user_id)
+        if decoded_hash[0]['exp'].to_i >= Time.zone.now.to_i
+          @user = User.find_by(id: user_id)
+        else
+          nil
+        end
       else
         nil
       end
@@ -42,6 +47,5 @@ module Api::V2
       render(json: { error: "Unauthorized access, please log in." }, 
         status: :unauthorized) unless logged_in?
     end
-
   end
 end
