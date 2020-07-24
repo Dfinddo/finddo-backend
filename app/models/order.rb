@@ -16,7 +16,7 @@ class Order < ApplicationRecord
     :cancelado, :processando_pagamento, 
     :recusado]
 
-  enum urgency: [:urgent, :not_urgent]
+  enum urgency: [:urgent, :delayable]
 
   validates :price, numericality:  { greater_than_or_equal_to: 0 }
 end

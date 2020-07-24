@@ -18,4 +18,5 @@ class User < ActiveRecord::Base
 
   validates :email, uniqueness: true
   validates :cellphone, uniqueness: true
+  validates :cpf, uniqueness: true
 end
