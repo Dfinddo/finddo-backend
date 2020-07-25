@@ -34,7 +34,6 @@ class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
   def create_user(user_params, address_params, params)
     User.transaction do
       @user = User.new(user_params)
-      @user.player_ids = params[:player_ids]
       @user.activated = true if @user.user_type == "user"
 
       if @user.save
@@ -62,15 +61,15 @@ class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
     end
   end
 
-  def update_user(user_params)
-    if @user.update(user_params)
-      @user
+  def update_user(user, user_params)
+    if user.update(user_params)
+      user
     else
-      raise ServicesModule::V2::ExceptionsModule::UserException.new(@user.errors)
+      raise ServicesModule::V2::ExceptionsModule::UserException.new(user.errors)
     end
   end
 
-  def activate_user
+  def activate_user(params)
     @user = User.find_by(cellphone: params[:cellphone])
 
     raise ServicesModule::V2::ExceptionsModule::UserException.new(nil, "Usuario não encontrado.") if @user.nil?
@@ -138,7 +137,7 @@ class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
     if params[:player_id]
       user.player_ids.delete params[:player_id]
 
-      if !@user.save
+      if !user.save
         raise ServicesModule::V2::ExceptionsModule::UserException.new(user.errors)
       end
     end

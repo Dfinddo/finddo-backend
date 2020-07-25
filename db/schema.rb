@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_07_09_025203) do
+ActiveRecord::Schema.define(version: 2020_07_25_025913) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -148,7 +148,7 @@ ActiveRecord::Schema.define(version: 2020_07_09_025203) do
     t.string "birthdate"
     t.string "own_id_wirecard"
     t.string "bairro"
-    t.string "player_ids", default: [], array: true
+    t.string "player_ids", default: [], null: false, array: true
     t.string "surname"
     t.string "mothers_name"
     t.string "id_wirecard_account"

@@ -30,7 +30,7 @@ class Api::V2::UsersController < Api::V2::ApiController
 
   def update
     begin
-      @user = @user_service.update_user(user_params)
+      @user = @user_service.update_user(@user, user_params)
       render json: @user, status: :ok
     rescue ServicesModule::V2::ExceptionsModule::UserException => e
       render json: e.user_errors, status: :unprocessable_entity
@@ -42,7 +42,7 @@ class Api::V2::UsersController < Api::V2::ApiController
       @user_service.activate_user(params)
     rescue ServicesModule::V2::ExceptionsModule::UserException => e
       if e.user_errors.nil?
-        render json: { erro: e.inspect }, status: :not_found
+        render json: { erro: e }, status: :not_found
       else
         render json: e.user_errors, status: :unprocessable_entity
       end
@@ -70,20 +70,20 @@ class Api::V2::UsersController < Api::V2::ApiController
 
   def update_player_id
     begin
-      @user_service.update_player_id(user, params)
+      @user_service.update_player_id(@user, params)
       head :no_content
     rescue ServicesModule::V2::ExceptionsModule::UserException => e
       if e.user_errors
         render json: u.user_errors, status: :unprocessable_entity
       else
-        render { erro: e.inspect }
+        render json: { erro: e }, status: :unprocessable_entity
       end
     end
   end
 
   def remove_player_id
     begin
-      @user_service.remove_player_id(user, params)
+      @user_service.remove_player_id(@user, params)
       head :no_content
     rescue ServicesModule::V2::ExceptionsModule::UserException => e
       render json: u.user_errors, status: :unprocessable_entity
@@ -123,10 +123,10 @@ class Api::V2::UsersController < Api::V2::ApiController
           :password, :password_confirmation,
           :email, :customer_wirecard_id,
           :birthdate, :own_id_wirecard,
-          :player_ids, :surname, 
-          :mothers_name, :id_wirecard_account, 
-          :token_wirecard_account, :set_account, 
-          :is_new_wire_account, :activated)
+          :surname, :mothers_name, 
+          :id_wirecard_account, :token_wirecard_account, 
+          :set_account, :is_new_wire_account, 
+          :activated, :player_ids => [])
     end
 
     def address_params

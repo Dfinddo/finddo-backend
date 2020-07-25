@@ -8,6 +8,7 @@ class ServicesModule::V2::RestService < ServicesModule::V2::BaseService
     params = {}
     params[:body] = body if !body.nil?
     params[:headers] = headers if !headers.nil?
+    params[:debug_output] = STDOUT
 
     HTTParty.post(url, params)
   end

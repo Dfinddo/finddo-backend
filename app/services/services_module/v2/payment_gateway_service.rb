@@ -6,13 +6,12 @@ class ServicesModule::V2::PaymentGatewayService < ServicesModule::V2::BaseServic
 
   def generate_access_token_professional(code)
     response = @rest_service.post("#{ENV['WIRECARD_CONNECT_URL']}", 
-      body: "client_id=#{ENV['WIRECARD_APP_ID']}&client_secret=#{ENV['WIRECARD_CLIENT_SECRET']}&redirect_uri=#{ENV['WIRECARD_REDIRECT_URI']}&grant_type=authorization_code&code=#{code}",
-      headers: {
+      "client_id=#{ENV['WIRECARD_APP_ID']}&client_secret=#{ENV['WIRECARD_CLIENT_SECRET']}&redirect_uri=#{ENV['WIRECARD_REDIRECT_URI']}&grant_type=authorization_code&code=#{code}",
+      {
         'Content-Type' => 'application/x-www-form-urlencoded',
         'charset' => 'utf-8',
         'Authorization' => ENV['WIRECARD_OAUTH_TOKEN'],
       }
-      # debug_output: STDOUT
     )
     if response.code == 200
       response
