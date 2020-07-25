@@ -3,6 +3,8 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '2.7.1'
 
+# paginação
+gem 'kaminari', '1.2.1'
 # geração de tokens jwt
 gem 'jwt', '2.2.1'
 # variaveis de ambiente

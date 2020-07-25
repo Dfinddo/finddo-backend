@@ -10,82 +10,30 @@ class Api::V2::OrdersController < Api::V2::ApiController
 
   # PUT /orders/associate/1/2 - /orders/associate/:id/:professional_id
   def associate_professional
-    @user = User.find_by(id: params[:professional_id], user_type: :professional)
-
-    if !@user
-      render json: {error: 'profissional não encontrado'}, status: :forbidden
-      return
+    begin
+      @order_service.associate_professional(params, @order)
+    rescue ServicesModule::V2::ExceptionsModule::OrderWithProfessionalException => e
+      render json: { error: e }
+    rescue ActiveRecord::RecordNotFound => not_found_e
+      render json: { error: not_found_e }
+    rescue ServicesModule::V2::ExceptionsModule::OrderException => oe
+      render json: oe.order_errors
     end
-
-    if @order.professional_order
-      render json: {error: 'pedido já possui profissional'}, status: :forbidden
-      return
-    end
-
-    @order.with_lock do
-      @order.professional_order = @user
-      # TODO: essa linha não tem sentido, o objetivo desse endpoint é apenas
-      # modificar o estado do status pedido para a_caminho
-      @order.assign_attributes(order_params)
-      @order.order_status = :a_caminho
-      if @order.save
-        render json: @order
-      else
-        render json: @order.errors, status: :unprocessable_entity
-        return
-      end
-    end
-
-    devices = []
-    client = User.find(@order.user_id)
-    client.player_ids.each { |player| devices << player }
-    return if devices.empty?
-
-    HTTParty.post('https://onesignal.com/api/v1/notifications', body: {
-      app_id: ENV['ONE_SIGNAL_APP_ID'],
-      include_player_ids: devices,
-      data: { pedido: 'aceito' },
-      contents: { en: 'Seu pedido foi aceito por um profissional' }
-    })
   end
 
   # GET /orders/user/:user_id/active
   def user_active_orders
-    @orders = Order
-      .includes(:address, :professional_order, 
-                :category, :user)
-      .with_attached_images
-      .where(user_id: params[:user_id])
-      .order(order_status: :asc).order(start_order: :asc)
-
-    render json: @orders
+    render json: @order_service.user_active_orders(params)
   end
 
   # GET /orders/available
   def available_orders
-    @orders = Order
-      .includes(:address, :professional_order, 
-                :category, :user)
-      .with_attached_images
-      .where({professional_order: nil})
-      .where.not(order_status: :finalizado)
-      .where.not(order_status: :cancelado)
-      .where.not(order_status: :processando_pagamento)
-      .where.not(order_status: :recusado)
-      .order(urgency: :asc).order(start_order: :asc)
-
-    render json: @orders
+    render json: @order_service.available_orders(params)
   end
 
   # GET /orders/active_orders_professional/:user_id
   def associated_active_orders
-    @orders = Order
-      .includes(:address, :professional_order, 
-                :category, :user)
-      .with_attached_images
-      .where({professional: params[:user_id]})
-
-    render json: @orders
+    render json: @order_service.associated_active_orders(params)
   end
 
   # POST /orders
@@ -147,47 +95,7 @@ class Api::V2::OrdersController < Api::V2::ApiController
 
   # PATCH/PUT /orders/1
   def update
-    old_status = @order.order_status
-    if @order.update(order_params)
-      devices = []
-      @order.user.player_ids.each do |el|
-        devices << el
-      end
-
-      status_novo = ""
-      if @order.order_status == "agendando_visita"
-        status_novo = "Agendando visita"
-      elsif @order.order_status == "a_caminho"
-        status_novo = "Profissional à caminho"
-      elsif @order.order_status == "em_servico"
-        status_novo = "Serviço em execução"
-      end
-
-      if status_novo != "" && @order.order_status != old_status
-        HTTParty.post("https://onesignal.com/api/v1/notifications", 
-        body: { 
-          app_id: ENV['ONE_SIGNAL_APP_ID'], 
-          include_player_ids: devices,
-          data: {pedido: 'status'},
-          contents: {en: "#{@order.category.name}\n#{status_novo}"} })
-      end
-
-      if @order.user_rate > 0
-        order_user = @order.user
-        order_user.rate = Order.where(user: @order.user).average(:user_rate)
-        order_user.save
-      end
-
-      if @order.rate > 0
-        professional_user = @order.professional_order
-        professional_user.rate = Order.where(professional_order: professional_user).average(:rate)
-        professional_user.save
-      end
-
-      render json: @order
-    else
-      render json: @order.errors, status: :unprocessable_entity
-    end
+    @order_service.update_order(@order, order_params)
   end
 
   # DELETE /orders/1
@@ -329,9 +237,7 @@ class Api::V2::OrdersController < Api::V2::ApiController
   private
 
     def set_services
-      @payment_gateway_service = ServicesModule::V2::PaymentGatewayService.new
-      @notification_service = ServicesModule::V2::NotificationService.new
-      @order_service = ServicesModule::V2::OrdersService.new
+      @order_service = ServicesModule::V2::OrderService.new
     end
 
     def set_order

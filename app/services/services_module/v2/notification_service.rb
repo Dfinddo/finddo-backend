@@ -5,12 +5,12 @@ class ServicesModule::V2::NotificationService < ServicesModule::V2::BaseService
     @onesignal_url = "https://onesignal.com/api/v1/notifications"
   end
 
-  def send_notification(devices = [], data = {}, contents = { 'en': '' })
+  def send_notification(devices = [], data = {}, content = '')
     body = {
       app_id: ENV['ONE_SIGNAL_APP_ID'], 
       include_player_ids: devices,
       data: data,
-      contents: contents}
+      contents: { 'en': content }}
 
     request = @rest_service.post(@onesignal_url, body)
 
