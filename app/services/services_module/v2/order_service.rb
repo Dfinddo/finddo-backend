@@ -8,29 +8,40 @@ class ServicesModule::V2::OrdersService < ServicesModule::V2::BaseService
     Order.find_by(id: id)
   end
 
-  def create_order(order, address, images, professional_id)
+  def create_order(order_params, address_params)
     # quando o pedido é urgente
-    order.start_order = DateTime.parse(order.start_order) if order.start_order
-    order.end_order = DateTime.parse(order.end_order) if order.end_order
-
-    new_order = Order.new(order)
-
-    if(order.address_id.nil?)
-      order_address = Address.new(address)
-      order_address.user_id = order[:professional_id]
-
-      order_address.save
-      new_order.address_id = order_address.id
+    if(order_params[:start_order])
+      order_params[:start_order] = DateTime.parse(order_params[:start_order])
+    end
+    if(order_params[:end_order])
+      order_params[:end_order] = DateTime.parse(order_params[:end_order])
     end
 
-    images.each do |image|
-      new_order.images.attach(image_io(image))
+    @order = Order.new(order_params)
+
+    if(order_params[:address_id] == nil)
+      @address = Address.new(address_params)
+      @address.user_id = order_params[:user_id]
+
+      @address.save
+      @order.address_id = @address.id
     end
 
-    if new_order.save
+    params[:images].each do |image|
+      @order.images.attach(image_io(image))
+    end
+
+    # TODO: esse if também não é mais utilizado, remover
+    if !@order.start_order
+      @order.start_order = (DateTime.now - 3.hours)
+    end
+    if !@order.end_order
+      @order.end_order = @order.start_order + 7.days
+    end
+
+    if @order.save
       devices = []
-
-      # mover para método em user_service também
+      
       User.where(user_type: :professional).each do |u|
         u.player_ids.each do |pl|
           devices << pl
@@ -38,14 +49,18 @@ class ServicesModule::V2::OrdersService < ServicesModule::V2::BaseService
       end
 
       if devices.length > 0
-        @notification_service
-          .send_notification(devices, { pedido: 'novo' }, 
-            contents = { 'en': "Novo pedido disponível para atendimento" })
+        HTTParty.post("https://onesignal.com/api/v1/notifications", 
+            body: { 
+              app_id: ENV['ONE_SIGNAL_APP_ID'], 
+              include_player_ids: devices,
+              data: {pedido: 'novo'},
+              contents: {en: "Novo pedido disponível para atendimento"} })
+        
       end
 
-      new_order
+      render json: @order, status: :created
     else
-      new_order.errors
+      render json: @order.errors, status: :unprocessable_entity
     end
   end
 
@@ -153,6 +168,140 @@ class ServicesModule::V2::OrdersService < ServicesModule::V2::BaseService
         order
       else
         raise ServicesModule::V2::ExceptionsModule::OrderException(order.errors)
+      end
+    end
+  end
+
+  def destroy_order(order)
+      order.destroy
+  end
+
+  def receive_webhook_wirecard(params)
+    order_id = params[:resource][:payment][:_links][:order][:title];
+    if params[:event] == "PAYMENT.IN_ANALYSIS"
+      order = Order.find_by(order_wirecard_id: order_id)
+      order.order_status = :processando_pagamento if order.order_status != "finalizado"
+      order.save
+    elsif params[:event] == "PAYMENT.AUTHORIZED"
+      order = Order.find_by(order_wirecard_id: order_id)
+      order.paid = true
+      order.order_status = :finalizado
+
+      if order.save
+        devices = []
+        order.professional_order.player_ids.each do |el|
+          devices << el
+        end
+        order.user.player_ids.each do |el|
+          devices << el
+        end
+
+        HTTParty.post("https://onesignal.com/api/v1/notifications", 
+          body: { 
+            app_id: ENV['ONE_SIGNAL_APP_ID'], 
+            include_player_ids: devices,
+            data: {pagamento: 'aceito'},
+            contents: {en: "Pagamento recebido\nObrigado por usar o Finddo!"} })
+      end
+    elsif params[:event] == "PAYMENT.CANCELLED"
+      order_id = params[:resource][:payment][:_links][:order][:title];
+      order = Order.find_by(order_wirecard_id: order_id)
+      
+      # voltar para em_servico para poder pagar de novo
+      order.order_status = :em_servico
+
+      devices = []
+      order.professional_order.player_ids.each do |el|
+        devices << el
+      end
+      order.user.player_ids.each do |el|
+        devices << el
+      end
+
+      HTTParty.post("https://onesignal.com/api/v1/notifications", 
+        body: { 
+          app_id: ENV['ONE_SIGNAL_APP_ID'], 
+          include_player_ids: devices,
+          data: {pagamento: 'cancelado'},
+          contents: {en: "Pagamento não efetuado\nFavor revisar informações de pagamento"} })
+    end
+  end
+
+  def budget_approve(params)
+    payload = {}
+    payload[:accepted] = params[:accepted]
+    payload[:order] = OrderSerializer.new @order
+
+    devices = @order.professional_order.player_ids
+
+    if params[:accepted] == nil
+      render json: { erro: 'accepted deve ser true ou false' }, status: :internal_server_error
+      return
+    end
+
+    if devices.empty?
+      render json: { erro: 'O profissional não está logado.' }, status: :unprocessable_entity
+    elsif payload[:accepted]
+      req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
+          body: { 
+            app_id: ENV['ONE_SIGNAL_APP_ID'], 
+            include_player_ids: devices,
+            data: payload,
+            contents: { en: "O orçamento para o pedido foi aprovado." } })
+      
+      if req.code == 200
+        @order.budget.update(accepted: true)
+        render json: payload, status: :ok
+      else
+        render json: { erro: 'Falha ao enviar a notificação.' }, status: :internal_server_error
+      end
+    else
+      if @order.update({ order_status: :cancelado })
+        req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
+          body: { 
+            app_id: ENV['ONE_SIGNAL_APP_ID'], 
+            include_player_ids: devices,
+            data: payload,
+            contents: { en: "O orçamento para o pedido foi recusado." } })
+  
+        if req.code == 200
+          @order.budget.update(accepted: false)
+          render json: payload, status: :ok
+        else
+          render json: { erro: 'Falha ao enviar a notificação.' }, status: :internal_server_error
+        end
+      end
+    end
+  end
+
+  def propose_budget(order, params)
+    payload = {}
+    order.budget.destroy if order.budget
+    budget = Budget.create(order: order, budget: params[:budget])
+    payload[:budget] = budget
+    order.reload
+    payload[:order] = OrderSerializer.new order
+
+    devices = order.user.player_ids
+
+    if devices.empty?
+      budget.destroy
+      render json: { erro: 'O usuário não está logado.' }, status: :unprocessable_entity
+    else
+      req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
+          body: { 
+            app_id: ENV['ONE_SIGNAL_APP_ID'], 
+            include_player_ids: devices,
+            data: payload,
+            contents: { en: "Seu pedido recebeu um orçamento." } },
+            :debug_output => $stdout)
+      
+      print "===================================="
+      print req
+      if req.code == 200
+        render json: payload, status: :ok
+      else
+        render json: { erro: 'Falha ao enviar a notificação.' }, status: :internal_server_error
       end
     end
   end
