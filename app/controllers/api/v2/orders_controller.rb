@@ -38,7 +38,19 @@ class Api::V2::OrdersController < Api::V2::ApiController
 
   # POST /orders
   def create
-    @order_service.create_order(order_params, address_params)
+    create_state = nil
+    
+    if !params.has_key?(:address)
+      create_state = @order_service.create_order(order_params, nil, params)
+    else
+      create_state = @order_service.create_order(order_params, address_params, params)
+    end
+
+    if create_state[:order]
+      render json: create_state[:order], status: :created
+    else
+      render json: create_state[:errors], status: :bad_request
+    end
   end
 
   # PATCH/PUT /orders/1
@@ -53,7 +65,7 @@ class Api::V2::OrdersController < Api::V2::ApiController
 
   # POST /orders/payment_webhook
   def payment_webhook
-    @order_resource.receive_webhook_wirecard(params)
+    @order_service.receive_webhook_wirecard(params)
   end
 
   def budget_approve

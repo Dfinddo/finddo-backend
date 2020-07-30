@@ -1,4 +1,4 @@
-class ServicesModule::V2::OrdersService < ServicesModule::V2::BaseService
+class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
 
   def initialize
     @notification_service = ServicesModule::V2::NotificationService.new
@@ -8,7 +8,7 @@ class ServicesModule::V2::OrdersService < ServicesModule::V2::BaseService
     Order.find_by(id: id)
   end
 
-  def create_order(order_params, address_params)
+  def create_order(order_params, address_params, params)
     # quando o pedido é urgente
     if(order_params[:start_order])
       order_params[:start_order] = DateTime.parse(order_params[:start_order])
@@ -19,48 +19,50 @@ class ServicesModule::V2::OrdersService < ServicesModule::V2::BaseService
 
     @order = Order.new(order_params)
 
-    if(order_params[:address_id] == nil)
-      @address = Address.new(address_params)
-      @address.user_id = order_params[:user_id]
+    Order.transaction do
+      if(order_params[:address_id] == nil)
+        @address = Address.new(address_params)
+        @address.user_id = order_params[:user_id]
 
-      @address.save
-      @order.address_id = @address.id
-    end
-
-    params[:images].each do |image|
-      @order.images.attach(image_io(image))
-    end
-
-    # TODO: esse if também não é mais utilizado, remover
-    if !@order.start_order
-      @order.start_order = (DateTime.now - 3.hours)
-    end
-    if !@order.end_order
-      @order.end_order = @order.start_order + 7.days
-    end
-
-    if @order.save
-      devices = []
-      
-      User.where(user_type: :professional).each do |u|
-        u.player_ids.each do |pl|
-          devices << pl
-        end
+        @address.save
+        @order.address_id = @address.id
       end
 
-      if devices.length > 0
-        HTTParty.post("https://onesignal.com/api/v1/notifications", 
-            body: { 
-              app_id: ENV['ONE_SIGNAL_APP_ID'], 
-              include_player_ids: devices,
-              data: {pedido: 'novo'},
-              contents: {en: "Novo pedido disponível para atendimento"} })
+      params[:images].each do |image|
+        @order.images.attach(image_io(image))
+      end
+
+      # TODO: esse if também não é mais utilizado, remover
+      if !@order.start_order
+        @order.start_order = (DateTime.now - 3.hours)
+      end
+      if !@order.end_order
+        @order.end_order = @order.start_order + 7.days
+      end
+
+      if @order.save
+        devices = []
         
-      end
+        User.where(user_type: :professional).each do |u|
+          u.player_ids.each do |pl|
+            devices << pl
+          end
+        end
 
-      render json: @order, status: :created
-    else
-      render json: @order.errors, status: :unprocessable_entity
+        if devices.length > 0
+          HTTParty.post("https://onesignal.com/api/v1/notifications", 
+              body: { 
+                app_id: ENV['ONE_SIGNAL_APP_ID'], 
+                include_player_ids: devices,
+                data: {pedido: 'novo'},
+                contents: {en: "Novo pedido disponível para atendimento"} })
+          
+        end
+
+        { order: @order, errors: nil }
+      else
+        { order: nil, errors: @order.errors }
+      end
     end
   end
 
@@ -99,7 +101,7 @@ class ServicesModule::V2::OrdersService < ServicesModule::V2::BaseService
       .where(user_id: params[:user_id])
       .order(order_status: :asc).order(start_order: :asc).page(params[:page])
     
-    { items: @orders, current_page: @orders.current_page, total_pages: @orders.total_pages }
+      { items: @orders.map { |order| OrderSerializer.new order }, current_page: @orders.current_page, total_pages: @orders.total_pages }
   end
 
   def available_orders(params)
@@ -114,7 +116,7 @@ class ServicesModule::V2::OrdersService < ServicesModule::V2::BaseService
       .where.not(order_status: :recusado)
       .order(urgency: :asc).order(start_order: :asc).page(params[:page])
     
-    { items: @orders, current_page: @orders.current_page, total_pages: @orders.total_pages }
+    { items: @orders.map { |order| OrderSerializer.new order }, current_page: @orders.current_page, total_pages: @orders.total_pages }
   end
 
   def associated_active_orders(params)
