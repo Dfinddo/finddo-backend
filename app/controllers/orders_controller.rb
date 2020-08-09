@@ -23,8 +23,6 @@ class OrdersController < ApplicationController
 
     @order.with_lock do
       @order.professional_order = @user
-      # TODO: essa linha não tem sentido, o objetivo desse endpoint é apenas
-      # modificar o estado do status pedido para a_caminho
       @order.assign_attributes(order_params)
       @order.order_status = :a_caminho
       if @order.save
@@ -111,7 +109,6 @@ class OrdersController < ApplicationController
       @order.images.attach(image_io(image))
     end
 
-    # TODO: esse if também não é mais utilizado, remover
     if !@order.start_order
       @order.start_order = (DateTime.now - 3.hours)
     end

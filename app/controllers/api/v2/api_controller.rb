@@ -5,7 +5,7 @@ module Api::V2
     def encode_token(payload)
       exp = Time.zone.now.to_i + 30 * 24 * 3600 # 30 dias
       payload[:exp] = exp
-      JWT.encode(payload, 'my_secret') # <= Trocar para variável de ambiente
+      JWT.encode(payload, ENV['JWT_SECRET'])
     end
 
     def session_user
