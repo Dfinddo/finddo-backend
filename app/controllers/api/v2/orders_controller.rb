@@ -69,11 +69,21 @@ class Api::V2::OrdersController < Api::V2::ApiController
   end
 
   def budget_approve
-    @order_service.budget_approve(params)
+    begin
+      payload = @order_service.budget_approve(@order, params)
+      render json: payload, status: :ok
+    rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
+      render json: e.get_error_object[:error_obj], status: e.get_error_object[:error_status]
+    end
   end
 
   def propose_budget
-    @order_service.propose_budget(@order, params)
+    begin
+      payload = @order_service.propose_budget(@order, params)
+      render json: payload, status: :ok
+    rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
+      render json: e.get_error_object[:error_obj], status: e.get_error_object[:error_status]
+    end
   end
 
   private

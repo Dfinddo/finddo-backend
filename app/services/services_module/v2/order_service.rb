@@ -126,7 +126,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
       .with_attached_images
       .where({professional: params[:user_id]}).page(params[:page])
 
-    { items: @orders, current_page: @orders.current_page, total_pages: @orders.total_pages }
+    { items: @orders.map { |order| OrderSerializer.new order }, current_page: @orders.current_page, total_pages: @orders.total_pages }
   end
 
   def update_order(order, order_params)
@@ -229,20 +229,23 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     end
   end
 
-  def budget_approve(params)
+  def budget_approve(order, params)
     payload = {}
     payload[:accepted] = params[:accepted]
-    payload[:order] = OrderSerializer.new @order
+    payload[:order] = OrderSerializer.new order
 
-    devices = @order.professional_order.player_ids
+    devices = order.professional_order.player_ids
 
     if params[:accepted] == nil
-      render json: { erro: 'accepted deve ser true ou false' }, status: :internal_server_error
-      return
+      raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+        nil, 'accepted deve ser true ou false'
+      )
     end
 
     if devices.empty?
-      render json: { erro: 'O profissional não está logado.' }, status: :unprocessable_entity
+      raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+        nil, 'O profissional não está logado.', 422
+      )
     elsif payload[:accepted]
       req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
           body: { 
@@ -252,13 +255,15 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
             contents: { en: "O orçamento para o pedido foi aprovado." } })
       
       if req.code == 200
-        @order.budget.update(accepted: true)
-        render json: payload, status: :ok
+        order.budget.update(accepted: true)
+        payload
       else
-        render json: { erro: 'Falha ao enviar a notificação.' }, status: :internal_server_error
+        raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+          nil, 'Falha ao enviar a notificação.'
+        )
       end
     else
-      if @order.update({ order_status: :cancelado })
+      if order.update({ order_status: :cancelado })
         req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
           body: { 
             app_id: ENV['ONE_SIGNAL_APP_ID'], 
@@ -267,10 +272,11 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
             contents: { en: "O orçamento para o pedido foi recusado." } })
   
         if req.code == 200
-          @order.budget.update(accepted: false)
-          render json: payload, status: :ok
+          order.budget.update(accepted: false)
         else
-          render json: { erro: 'Falha ao enviar a notificação.' }, status: :internal_server_error
+          raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+            nil, 'Falha ao enviar a notificação.'
+          )
         end
       end
     end
@@ -288,22 +294,23 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
 
     if devices.empty?
       budget.destroy
-      render json: { erro: 'O usuário não está logado.' }, status: :unprocessable_entity
+      raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+        nil, 'Usuário não está logado', 422
+      )
     else
       req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
           body: { 
             app_id: ENV['ONE_SIGNAL_APP_ID'], 
             include_player_ids: devices,
             data: payload,
-            contents: { en: "Seu pedido recebeu um orçamento." } },
-            :debug_output => $stdout)
-      
-      print "===================================="
-      print req
+            contents: { en: "Seu pedido recebeu um orçamento." } })
+
       if req.code == 200
-        render json: payload, status: :ok
+        payload
       else
-        render json: { erro: 'Falha ao enviar a notificação.' }, status: :internal_server_error
+        raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+          nil, 'Falha ao enviar a notificação.'
+        )
       end
     end
   end
