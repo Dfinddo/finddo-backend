@@ -31,7 +31,7 @@ class Api::V2::UsersController < Api::V2::ApiController
   def update
     begin
       @user = @user_service.update_user(@user, user_params)
-      render json: @user, status: :ok
+      render json: SerializersModule::V2::UserSerializer.new(@user).serializable_hash, status: :ok
     rescue ServicesModule::V2::ExceptionsModule::UserException => e
       render json: e.user_errors, status: :unprocessable_entity
     end
