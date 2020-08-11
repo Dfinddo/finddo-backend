@@ -1,6 +1,7 @@
 module Api::V2
   class ApiController < ApplicationController
     include ServicesModule::V2
+    include SerializersModule::V2
 
     def encode_token(payload)
       exp = Time.zone.now.to_i + 30 * 24 * 3600 # 30 dias

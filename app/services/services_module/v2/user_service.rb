@@ -2,6 +2,7 @@ class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
 
   def initialize
     @payment_gateway_service = ServicesModule::V2::PaymentGatewayService.new
+    @address_service = ServicesModule::V2::AddressService.new
   end
 
   def find_user(id)
@@ -37,18 +38,9 @@ class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
       @user.activated = true if @user.user_type == "user"
 
       if @user.save
-        @user.addresses.build(address_params)
+        address = @user.addresses.build(address_params)
         
-        # informações de cobrança da Wirecard
-        if address_params
-          @user.cep = address_params[:cep]
-          @user.rua = address_params[:street]
-          @user.estado = address_params[:state]
-          @user.bairro = address_params[:district]
-          @user.cidade = address_params[:city]
-          @user.numero = address_params[:number]
-          @user.complemento = address_params[:complement]
-        end
+        @address_service.set_selected_address(@user, address)
 
         if @user.save
           @user
