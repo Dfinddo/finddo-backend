@@ -51,6 +51,22 @@ class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
           rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
             raise e
           end
+        elsif @user.user_type == "professional"
+          begin
+            if !@payment_gateway_service.wirecard_account_exists?(@user.cpf)
+              response = @payment_gateway_service.generate_classical_wirecard_account(@user, address)
+              parsed_response = JSON.parse(response.body)
+              @user.id_wirecard_account = parsed_response["id"]
+              @user.set_account = parsed_response["_links"]["setPassword"]["href"]
+            end
+            @user.is_new_wire_account = true
+          rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
+            raise e
+          end
+        else
+          raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+            nil, 'tipo usuário inválido', 400
+          )
         end
 
         if @user.save
