@@ -42,13 +42,15 @@ class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
         
         @address_service.set_selected_address(@user, address)
 
-        begin
-          response = @payment_gateway_service.create_wirecard_customer(@user, address)
-          parsed_response = JSON.parse(response.body)
-          @user.customer_wirecard_id = parsed_response["id"]
-          @user.own_id_wirecard = parsed_response["ownId"]
-        rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
-          raise e
+        if @user.user_type == "user"
+          begin
+            response = @payment_gateway_service.create_wirecard_customer(@user, address)
+            parsed_response = JSON.parse(response.body)
+            @user.customer_wirecard_id = parsed_response["id"]
+            @user.own_id_wirecard = parsed_response["ownId"]
+          rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
+            raise e
+          end
         end
 
         if @user.save
