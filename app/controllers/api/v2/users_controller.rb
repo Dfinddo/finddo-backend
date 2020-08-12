@@ -25,6 +25,8 @@ class Api::V2::UsersController < Api::V2::ApiController
       render json: SerializersModule::V2::UserSerializer.new(@user).serializable_hash, status: :created
     rescue ServicesModule::V2::ExceptionsModule::UserException => e
       render json: e.user_errors, status: :unprocessable_entity
+    rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
+      render json: e.get_error_object[:error_obj], status: e.get_error_object[:error_status]
     end
   end
 

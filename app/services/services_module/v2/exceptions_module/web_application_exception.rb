@@ -11,7 +11,7 @@ class ServicesModule::V2::ExceptionsModule::WebApplicationException < ServicesMo
 
   def get_error_object
     obj = { error_obj: { message: @msg }, error_status: @status }
-    obj[:errors] = @errors if !@errors.nil?
+    obj[:error_obj][:errors] = @errors if !@errors.nil?
     
     obj
   end
