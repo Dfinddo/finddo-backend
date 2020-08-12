@@ -6,7 +6,7 @@ module Api::V2
     def encode_token(payload)
       exp = Time.zone.now.to_i + 30 * 24 * 3600 # 30 dias
       payload[:exp] = exp
-      JWT.encode(payload, ENV['JWT_SECRET'])
+      JWT.encode(payload, "#{ENV['JWT_SECRET']}")
     end
 
     def session_user
@@ -31,7 +31,7 @@ module Api::V2
       if auth_header
         token = auth_header.split(' ')[1]
         begin
-          JWT.decode(token, 'my_secret', true, algorithm: 'HS256')
+          JWT.decode(token, "#{ENV['JWT_SECRET']}", true, algorithm: 'HS256')
         rescue JWT::DecodeError
           []
         end
