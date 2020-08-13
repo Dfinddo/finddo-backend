@@ -113,11 +113,70 @@ class ServicesModule::V2::PaymentGatewayService < ServicesModule::V2::BaseServic
 
     if response.code == 200
       true
-    elsif response.code = 404
+    elsif response.code == 404
       false
     else
       raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
         JSON.parse(response.body), 'falha ao verificar cpf na Wirecard', response.code
+      )
+    end
+  end
+
+  def create_wirecard_order(order, value, session_user)
+      wirecard_order = {
+        ownId: SecureRandom.uuid,
+        amount: {
+          currency: "BRL"
+        },
+        items: [
+          {
+            product: order.category.name,
+            quantity: 1,
+            detail: "Prestação de serviço residencial",
+            price: calculate_service_value(value)[:value_with_tax].to_i
+          }
+        ],
+        customer: {
+          id: order.user.customer_wirecard_id
+        },
+        receivers: [
+          {
+            type: "PRIMARY",
+            feePayor: true,
+            moipAccount: {
+              id: "#{ENV['MOIP_ACCOUNT_ID']}"
+            },
+            amount: {
+              fixed: calculate_service_value(value)[:tax_value].to_i
+            }
+          },
+          {
+            type: "SECONDARY",
+            feePayor: false,
+            moipAccount: {
+              id: session_user.id_wirecard_account
+            },
+            amount: {
+              fixed: value.to_i
+            }
+          }
+        ]
+      }
+
+    response = @rest_service.post(
+      "#{ENV['WIRECARD_API_URL']}/orders",
+      wirecard_order.to_json,
+      {
+        'Content-Type' => 'application/json',
+        'Authorization' => ENV['WIRECARD_OAUTH_TOKEN']
+      }
+    )
+
+    if response.code == 201
+      response
+    else
+      raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+        JSON.parse(response.body), 'falha ao criar pedido na Wirecard', response.code
       )
     end
   end
@@ -137,4 +196,20 @@ class ServicesModule::V2::PaymentGatewayService < ServicesModule::V2::BaseServic
       raise ServicesModule::V2::ExceptionsModule::PaymentGatewayException.new(response.body)
     end
   end
+
+  private
+
+    def calculate_service_value(value)
+      value_with_tax = 0
+
+      if value < 80
+        value_with_tax = value * 1.25
+      elsif value < 500
+        value_with_tax = value * 1.2
+      else
+        value_with_tax = value * 1.15
+      end
+
+      { value_with_tax: value_with_tax, tax_value: value_with_tax - value }
+    end
 end

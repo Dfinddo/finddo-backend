@@ -2,6 +2,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
 
   def initialize
     @notification_service = ServicesModule::V2::NotificationService.new
+    @payment_gateway_service = ServicesModule::V2::PaymentGatewayService.new
   end
 
   def find_order(id)
@@ -310,6 +311,28 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
       else
         raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
           nil, 'Falha ao enviar a notificação.'
+        )
+      end
+    end
+  end
+
+  def create_wirecard_order(order, price, session_user)
+    Order.transaction do
+      begin
+        response = @payment_gateway_service.create_wirecard_order(order, price, session_user)
+        parsed_response = JSON.parse(response.body)
+        order.order_wirecard_own_id = parsed_response["ownId"]
+        order.order_wirecard_id = parsed_response["id"]
+        order.price = parsed_response["amount"]["total"]
+      rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
+        raise e
+      end
+
+      if order.save
+        order
+      else
+        raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+          order.errors, 'falha ao associar pedido Wirecard com pedido na base de dados.'
         )
       end
     end
