@@ -1,7 +1,7 @@
 class Api::V2::UsersController < Api::V2::ApiController
   before_action :set_services
   before_action :require_login, except: [:create, :generate_access_token_professional, :get_user]
-  before_action :set_user, except: [:create, :get_user, :activate_user]
+  before_action :set_user, except: [:create, :get_user, :activate_user, :add_credit_card]
 
   # GET /users
   def get_user
@@ -99,6 +99,15 @@ class Api::V2::UsersController < Api::V2::ApiController
     rescue ServicesModule::V2::ExceptionsModule::UserException, 
       ServicesModule::V2::ExceptionsModule::PaymentGatewayException => e
       render json: e.errors, status: :unprocessable_entity
+    end
+  end
+
+  def add_credit_card
+    begin
+      credit_card = @user_service.add_credit_card_user(params[:credit_card], session_user)
+      render json: credit_card, status: :created
+    rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
+      render json: e.get_error_object[:error_obj], status: e.get_error_object[:error_status]
     end
   end
 

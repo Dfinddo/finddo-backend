@@ -179,6 +179,16 @@ class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
     end
   end
 
+  def add_credit_card_user(credit_card_data, user)
+    begin
+      response = @payment_gateway_service.add_credit_card(credit_card_data, user)
+      parsed_response = JSON.parse(response.body)
+      parsed_response
+    rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
+      raise e
+    end
+  end
+
   private
 
     def image_io(image)

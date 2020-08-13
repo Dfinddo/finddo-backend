@@ -6,6 +6,26 @@ class ServicesModule::V2::PaymentGatewayService < ServicesModule::V2::BaseServic
     @rest_service = ServicesModule::V2::RestService.new
   end
 
+  def add_credit_card(credit_card_cata, customer_data)
+    response = @rest_service.post(
+      "#{ENV['WIRECARD_API_URL']}/customers/#{customer_data.customer_wirecard_id}/fundinginstruments",
+      credit_card_cata.to_json,
+      {
+        'Content-Type' => 'application/json',
+        'Authorization' => ENV['WIRECARD_OAUTH_TOKEN']
+      }
+    )
+
+    if response.code == 201
+      response
+    else
+      raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+        JSON.parse(response.body), 
+        'falha ao adicionar cartão de crédito na Wirecard', response.code
+      )
+    end
+  end
+
   def create_wirecard_customer(customer_data, address_data)
     new_customer = {
       ownId: SecureRandom.uuid,
