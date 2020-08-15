@@ -26,6 +26,56 @@ class ServicesModule::V2::PaymentGatewayService < ServicesModule::V2::BaseServic
     end
   end
 
+  def get_customer_credit_card_data(customer_wirecard_id)
+    begin
+      response = get_wirecard_customer(customer_wirecard_id)
+      parsed_response = JSON.parse(response.body)
+      if parsed_response["fundingInstruments"]
+        parsed_response["fundingInstruments"]
+      else
+        []
+      end
+    rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
+      raise e
+    end
+  end
+
+  def remove_customer_credit_card_data(card_id)
+    response = @rest_service.delete(
+      "#{ENV['WIRECARD_API_URL']}/fundinginstruments/#{card_id}",
+      {
+        'Content-Type' => 'application/json',
+        'Authorization' => ENV['WIRECARD_OAUTH_TOKEN']
+      }
+    )
+
+    if response.code != 200
+      raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+        JSON.parse(response.body), 
+        'falha ao remover cartão de crédito na Wirecard', response.code
+      )
+    end
+  end
+
+  def get_wirecard_customer(customer_wirecard_id)
+    response = @rest_service.get(
+      "#{ENV['WIRECARD_API_URL']}/customers/#{customer_wirecard_id}",
+      {
+        'Content-Type' => 'application/json',
+        'Authorization' => ENV['WIRECARD_OAUTH_TOKEN']
+      }
+    )
+
+    if response.code == 200
+      response
+    else
+      raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+        JSON.parse(response.body), 
+        'falha ao buscar cliente na Wirecard', response.code
+      )
+    end
+  end
+
   def create_wirecard_customer(customer_data, address_data)
     new_customer = {
       ownId: SecureRandom.uuid,

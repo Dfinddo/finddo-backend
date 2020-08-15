@@ -52,6 +52,8 @@ Rails.application.routes.draw do
       get 'users', to: 'users#get_user'
       put 'users/activate', to: 'users#activate_user'
       post 'users/add_credit_card', to: 'users#add_credit_card'
+      get 'users/get_credit_card', to: 'users#get_customer_credit_card_data'
+      delete 'users/credit_card/:card_id', to: 'users#remove_customer_credit_card_data'
       put 'users/:id', to: 'users#update'
       get 'users/profile_photo/:id', to: 'users#get_profile_photo'
       put 'users/profile_photo/:id', to: 'users#set_profile_photo'

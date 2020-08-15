@@ -189,6 +189,22 @@ class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
     end
   end
 
+  def get_customer_credit_card_data(customer_wirecard_id)
+    begin
+      @payment_gateway_service.get_customer_credit_card_data(customer_wirecard_id)
+    rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
+      raise e
+    end
+  end
+
+  def remove_customer_credit_card_data(card_id)
+    begin
+      @payment_gateway_service.remove_customer_credit_card_data(card_id)
+    rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
+      raise e
+    end
+  end
+
   private
 
     def image_io(image)

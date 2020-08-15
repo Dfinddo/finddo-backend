@@ -1,7 +1,9 @@
 class Api::V2::UsersController < Api::V2::ApiController
   before_action :set_services
   before_action :require_login, except: [:create, :generate_access_token_professional, :get_user]
-  before_action :set_user, except: [:create, :get_user, :activate_user, :add_credit_card]
+  before_action :set_user, except: [
+    :create, :get_user, :activate_user, :add_credit_card,
+    :get_customer_credit_card_data, :remove_customer_credit_card_data]
 
   # GET /users
   def get_user
@@ -106,6 +108,24 @@ class Api::V2::UsersController < Api::V2::ApiController
     begin
       credit_card = @user_service.add_credit_card_user(params[:credit_card], session_user)
       render json: credit_card, status: :created
+    rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
+      render json: e.get_error_object[:error_obj], status: e.get_error_object[:error_status]
+    end
+  end
+
+  def get_customer_credit_card_data
+    begin
+      credit_card_data = @user_service.get_customer_credit_card_data(session_user.customer_wirecard_id)
+      render json: credit_card_data, status: :ok
+    rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
+      render json: e.get_error_object[:error_obj], status: e.get_error_object[:error_status]
+    end
+  end
+
+  def remove_customer_credit_card_data
+    begin
+      @user_service.remove_customer_credit_card_data(params[:card_id])
+      head :ok
     rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
       render json: e.get_error_object[:error_obj], status: e.get_error_object[:error_status]
     end
