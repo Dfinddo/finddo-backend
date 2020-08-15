@@ -338,6 +338,16 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     end
   end
 
+  def create_payment(payment_data, order_wirecard_id)
+    begin
+      response = @payment_gateway_service.create_wirecard_payment(payment_data, order_wirecard_id)
+      parsed_response = JSON.parse(response.body)
+      parsed_response
+    rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
+      raise e
+    end
+  end
+
   # possível candidato a serviço
   def image_io(image)
     decoded_image = Base64.decode64(image[:base64])

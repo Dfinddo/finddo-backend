@@ -76,6 +76,25 @@ class ServicesModule::V2::PaymentGatewayService < ServicesModule::V2::BaseServic
     end
   end
 
+  def create_wirecard_payment(payment_data, order_wirecard_id)
+    response = @rest_service.post(
+      "#{ENV['WIRECARD_API_URL']}/orders/#{order_wirecard_id}/payments",
+      payment_data.to_json,
+      {
+        'Content-Type' => 'application/json',
+        'Authorization' => ENV['WIRECARD_OAUTH_TOKEN']
+      }
+    )
+
+    if response.code == 201
+      response
+    else
+      raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+        JSON.parse(response.body), 'falha ao criar pagamento na Wirecard', response.code
+      )
+    end
+  end
+
   def create_wirecard_customer(customer_data, address_data)
     new_customer = {
       ownId: SecureRandom.uuid,

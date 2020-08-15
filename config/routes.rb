@@ -66,6 +66,7 @@ Rails.application.routes.draw do
       post '/orders/propose_budget', to: 'orders#propose_budget'
       post '/orders/payment_webhook', to: 'orders#payment_webhook'
       post '/orders/create_order_wirecard/:id', to: 'orders#create_order_wirecard'
+      post '/orders/create_payment/:id', to: 'orders#create_payment'
       get '/orders/available', to: 'orders#available_orders'
       put '/orders/associate/:id/:professional_id', to: 'orders#associate_professional'
       get '/orders/user/:user_id/active', to: 'orders#user_active_orders'

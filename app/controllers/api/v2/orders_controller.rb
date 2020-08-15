@@ -2,7 +2,8 @@ class Api::V2::OrdersController < Api::V2::ApiController
   before_action :set_services
   before_action :require_login, except: [:payment_webhook]
   before_action :set_order, only: [:show, :update, :destroy, 
-    :associate_professional, :propose_budget, :budget_approve, :create_order_wirecard]
+    :associate_professional, :propose_budget, :budget_approve, :create_order_wirecard,
+    :create_payment]
 
   # GET api/v2/orders/:id
   def show
@@ -91,6 +92,15 @@ class Api::V2::OrdersController < Api::V2::ApiController
     begin
       payload = @order_service.create_wirecard_order(@order, params[:price], session_user)
       render json: payload, status: :ok
+    rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
+      render json: e.get_error_object[:error_obj], status: e.get_error_object[:error_status]
+    end
+  end
+
+  def create_payment
+    begin
+      payment_data = @order_service.create_payment(params[:payment_data], @order.order_wirecard_id)
+      render json: payment_data, status: :created
     rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
       render json: e.get_error_object[:error_obj], status: e.get_error_object[:error_status]
     end
