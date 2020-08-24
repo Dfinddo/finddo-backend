@@ -128,17 +128,26 @@ ActiveRecord::Schema.define(version: 2020_07_25_025913) do
     t.string "current_sign_in_ip"
     t.string "last_sign_in_ip"
     t.string "name"
+    t.string "nickname"
     t.string "image"
     t.string "email"
+    t.string "telephone"
     t.string "cellphone"
     t.string "cpf"
     t.json "tokens"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "user_type"
+    t.string "cep"
+    t.string "cidade"
+    t.string "complemento"
+    t.string "estado"
+    t.string "numero"
+    t.string "rua"
     t.string "customer_wirecard_id"
     t.string "birthdate"
     t.string "own_id_wirecard"
+    t.string "bairro"
     t.string "player_ids", default: [], null: false, array: true
     t.string "surname"
     t.string "mothers_name"
@@ -149,15 +158,6 @@ ActiveRecord::Schema.define(version: 2020_07_25_025913) do
     t.boolean "is_new_wire_account", default: false
     t.decimal "rate", precision: 2, scale: 1, default: "0.0"
     t.boolean "activated", default: false
-    t.string "bairro"
-    t.string "rua"
-    t.string "numero"
-    t.string "estado"
-    t.string "complemento"
-    t.string "cidade"
-    t.string "cep"
-    t.string "telephone"
-    t.string "nickname"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
