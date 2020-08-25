@@ -76,9 +76,9 @@ class ServicesModule::V2::PaymentGatewayService < ServicesModule::V2::BaseServic
     end
   end
 
-  def create_wirecard_payment(payment_data, order_wirecard_id)
+  def create_wirecard_payment(payment_data, order)
     response = @rest_service.post(
-      "#{ENV['WIRECARD_API_URL']}/orders/#{order_wirecard_id}/payments",
+      "#{ENV['WIRECARD_API_URL']}/orders/#{order.order_wirecard_id}/payments",
       payment_data.to_json,
       {
         'Content-Type' => 'application/json',

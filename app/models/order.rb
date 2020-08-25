@@ -10,11 +10,12 @@ class Order < ApplicationRecord
   belongs_to :address
 
   # :em_servico será o status quando o profissional só fizer a visita e tiver que retornar
+  # atenção ao editar valores, pois é um enum ordinal
   enum order_status: [
     :analise, :a_caminho, 
     :em_servico, :finalizado, 
     :cancelado, :processando_pagamento, 
-    :recusado]
+    :recusado, :orcamento_previo]
 
   enum urgency: [:urgent, :delayable]
 

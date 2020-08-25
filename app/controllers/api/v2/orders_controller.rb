@@ -99,7 +99,7 @@ class Api::V2::OrdersController < Api::V2::ApiController
 
   def create_payment
     begin
-      payment_data = @order_service.create_payment(params[:payment_data], @order.order_wirecard_id)
+      payment_data = @order_service.create_payment(params[:payment_data], @order)
       render json: payment_data, status: :created
     rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
       render json: e.get_error_object[:error_obj], status: e.get_error_object[:error_status]

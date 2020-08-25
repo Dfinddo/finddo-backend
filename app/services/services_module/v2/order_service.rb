@@ -338,11 +338,19 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     end
   end
 
-  def create_payment(payment_data, order_wirecard_id)
+  def create_payment(payment_data, order)
     begin
-      response = @payment_gateway_service.create_wirecard_payment(payment_data, order_wirecard_id)
+      response = @payment_gateway_service.create_wirecard_payment(payment_data, order)
       parsed_response = JSON.parse(response.body)
-      parsed_response
+      
+      order.payment_wirecard_id = parsed_response["id"]
+      if order.save
+        parsed_response
+      else
+        raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+          order.errors, 'falha ao criar pagamento na Wirecard'
+        )
+      end
     rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
       raise e
     end
