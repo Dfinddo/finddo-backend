@@ -15,7 +15,8 @@ class Order < ApplicationRecord
     :analise, :a_caminho, 
     :em_servico, :finalizado, 
     :cancelado, :processando_pagamento, 
-    :recusado, :orcamento_previo]
+    :recusado, :orcamento_previo,
+    :aguardando_profissional]
 
   enum urgency: [:urgent, :delayable]
 
