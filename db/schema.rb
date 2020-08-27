@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_08_25_001909) do
+ActiveRecord::Schema.define(version: 2020_08_27_005124) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -90,6 +90,8 @@ ActiveRecord::Schema.define(version: 2020_08_25_001909) do
     t.string "hora_inicio"
     t.string "hora_fim"
     t.decimal "user_rate", precision: 2, scale: 1, default: "0.0"
+    t.boolean "previous_budget", default: false
+    t.bigint "previous_budget_value"
     t.index ["address_id"], name: "index_orders_on_address_id"
     t.index ["category_id"], name: "index_orders_on_category_id"
     t.index ["user_id"], name: "index_orders_on_user_id"

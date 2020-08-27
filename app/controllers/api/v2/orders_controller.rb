@@ -133,7 +133,8 @@ class Api::V2::OrdersController < Api::V2::ApiController
           :rate, :order_wirecard_own_id,
           :order_wirecard_id, :payment_wirecard_id,
           :hora_inicio, :hora_fim,
-          :user_rate)
+          :user_rate, :previous_budget,
+          :previous_budget_value)
     end
 
     def address_params

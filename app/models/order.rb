@@ -21,4 +21,13 @@ class Order < ApplicationRecord
   enum urgency: [:urgent, :delayable]
 
   validates :price, numericality:  { greater_than_or_equal_to: 0 }
+  validate  :previous_budget_value_if_previous_budget
+
+  private
+
+  def previous_budget_value_if_previous_budget
+    if previous_budget && previous_budget_value.nil?
+      errors.add(:previous_budget_value, "deve estar definido se previous_budget é true")
+    end
+  end
 end
