@@ -99,8 +99,8 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
       .includes(:address, :professional_order, 
                 :category, :user)
       .with_attached_images
-      .where(user_id: params[:user_id])
-      .order(order_status: :asc).order(start_order: :asc).page(params[:page])
+      .where(user_id: params[:user_id], order_status: params[:order_status])
+      .order(start_order: :desc).page(params[:page])
     
       { items: @orders.map { |order| OrderSerializer.new order }, current_page: @orders.current_page, total_pages: @orders.total_pages }
   end
@@ -125,7 +125,8 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
       .includes(:address, :professional_order, 
                 :category, :user)
       .with_attached_images
-      .where({professional: params[:user_id]}).page(params[:page])
+      .where({professional: params[:user_id], order_status: params[:order_status]})
+      .order(urgency: :asc).order(start_order: :desc).page(params[:page])
 
     { items: @orders.map { |order| OrderSerializer.new order }, current_page: @orders.current_page, total_pages: @orders.total_pages }
   end
