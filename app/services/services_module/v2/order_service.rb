@@ -95,14 +95,24 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
   end
 
   def user_active_orders(params)
-    @orders = Order
-      .includes(:address, :professional_order, 
-                :category, :user)
-      .with_attached_images
-      .where(user_id: params[:user_id], order_status: params[:order_status])
-      .order(start_order: :desc).page(params[:page])
+    @orders = []
+    if params[:order_status]
+      @orders = Order
+        .includes(:address, :professional_order, 
+                  :category, :user)
+        .with_attached_images
+        .where(user_id: params[:user_id], order_status: params[:order_status])
+        .order(start_order: :desc).page(params[:page])
+    else
+      @orders = Order
+        .includes(:address, :professional_order, 
+                  :category, :user)
+        .with_attached_images
+        .where(user_id: params[:user_id])
+        .order(start_order: :desc).page(params[:page])
+    end
     
-      { items: @orders.map { |order| OrderSerializer.new order }, current_page: @orders.current_page, total_pages: @orders.total_pages }
+    { items: @orders.map { |order| OrderSerializer.new order }, current_page: @orders.current_page, total_pages: @orders.total_pages }
   end
 
   def available_orders(params)
@@ -121,12 +131,22 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
   end
 
   def associated_active_orders(params)
-    @orders = Order
-      .includes(:address, :professional_order, 
-                :category, :user)
-      .with_attached_images
-      .where({professional: params[:user_id], order_status: params[:order_status]})
-      .order(urgency: :asc).order(start_order: :desc).page(params[:page])
+    @orders = []
+    if params[:order_params]
+      @orders = Order
+        .includes(:address, :professional_order, 
+                  :category, :user)
+        .with_attached_images
+        .where({professional: params[:user_id], order_status: params[:order_status]})
+        .order(urgency: :asc).order(start_order: :desc).page(params[:page])
+    else
+      @orders = Order
+        .includes(:address, :professional_order, 
+                  :category, :user)
+        .with_attached_images
+        .where({professional: params[:user_id]})
+        .order(urgency: :asc).order(start_order: :desc).page(params[:page])
+    end
 
     { items: @orders.map { |order| OrderSerializer.new order }, current_page: @orders.current_page, total_pages: @orders.total_pages }
   end
