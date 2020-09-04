@@ -132,7 +132,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
 
   def associated_active_orders(params)
     @orders = []
-    if params[:order_params]
+    if params[:order_status]
       @orders = Order
         .includes(:address, :professional_order, 
                   :category, :user)
