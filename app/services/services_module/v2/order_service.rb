@@ -307,7 +307,9 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
   def propose_budget(order, params)
     payload = {}
     order.budget.destroy if order.budget
-    budget = Budget.create(order: order, budget: params[:budget])
+    budget = Budget.create(
+      order: order, budget: params[:budget], 
+      is_previous: params[:is_previous])
     payload[:budget] = budget
     order.reload
     payload[:order] = OrderSerializer.new order
@@ -374,6 +376,30 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
       end
     rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
       raise e
+    end
+  end
+
+  def cancel_order(order)
+    if order.update(order_status: :cancelado)
+      order
+    else
+      raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+        order.errors, 'falha ao atualizar pedido na base de dados.'
+      )
+    end
+  end
+
+  def disassociate_professional(order)
+    Order.transaction do
+      order.professional_order = nil
+      order.budget.destroy if order.budget
+      if order.save
+        order
+      else
+        raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+          order.errors, 'falha ao atualizar pedido na base de dados.'
+        )
+      end
     end
   end
 

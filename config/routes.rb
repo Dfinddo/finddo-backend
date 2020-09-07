@@ -62,6 +62,8 @@ Rails.application.routes.draw do
       post 'users/get_token_wirecard', to: 'users#generate_access_token_professional'
 
       # Orders
+      put '/orders/disassociate/:id', to: 'orders#disassociate_professional'
+      put 'orders/cancel/:id', to: 'orders#cancel_order'
       post 'orders/budget_approve', to: 'orders#budget_approve'
       post '/orders/propose_budget', to: 'orders#propose_budget'
       post '/orders/payment_webhook', to: 'orders#payment_webhook'
