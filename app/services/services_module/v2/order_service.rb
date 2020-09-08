@@ -80,7 +80,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
 
     order.with_lock do
       order.professional_order = user
-      order.order_status = :a_caminho
+      order.order_status = :orcamento_previo
       
       if !order.save
         raise ServicesModule::V2::ExceptionsModule::OrderException.new(order.errors)
@@ -168,6 +168,8 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
           status_novo = "Profissional à caminho"
         elsif order.order_status == "em_servico"
           status_novo = "Serviço em execução"
+        elsif order.order_status == "aguardando_profissional"
+          status_novo = "Aguardando profissional"
         end
 
         if status_novo != "" && order.order_status != old_status
@@ -380,12 +382,24 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
   end
 
   def cancel_order(order)
-    if order.update(order_status: :cancelado)
-      order
-    else
-      raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
-        order.errors, 'falha ao atualizar pedido na base de dados.'
-      )
+    Order.transaction do
+      if order.update(order_status: :cancelado)
+        devices = order.user.player_ids
+        devices << order.professional_order.player_ids if order.professional_order
+
+        if @notification_service.send_notification(devices, {}, 
+          content = "#{order.category.name} - Pedido cancelado")
+          order
+        else
+          raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+            nil, 'falha ao se enviar a notificação, tente novamente', 400
+          )
+        end
+      else
+        raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+          order.errors, 'falha ao atualizar pedido na base de dados.'
+        )
+      end
     end
   end
 
@@ -394,7 +408,17 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
       order.professional_order = nil
       order.budget.destroy if order.budget
       if order.save
-        order
+        devices = []
+        devices << order.professional_order.player_ids if order.professional_order
+
+        if @notification_service.send_notification(devices, {}, 
+          content = "#{order.category.name} - desasociado do pedido")
+          order
+        else
+          raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+            nil, 'falha ao se enviar a notificação, tente novamente', 400
+          )
+        end
       else
         raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
           order.errors, 'falha ao atualizar pedido na base de dados.'

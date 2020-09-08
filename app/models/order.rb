@@ -9,6 +9,11 @@ class Order < ApplicationRecord
     foreign_key: :professional
   belongs_to :address
 
+  # ordem dos passos sucedidos do pedido:
+  # analise, orcamento_previo, agendando_visita,
+  # aguardando_profissional, a_caminho,
+  # em_servico, finalizado (em qualquer momento se pode cancelar também)
+
   # :em_servico será o status quando o profissional só fizer a visita e tiver que retornar
   # atenção ao editar valores, pois é um enum ordinal
   enum order_status: [

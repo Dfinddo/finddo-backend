@@ -16,9 +16,11 @@ class ServicesModule::V2::NotificationService < ServicesModule::V2::BaseService
 
     if request.code == 200
       print "=============================== DEU CERTO ==========================="
+      return true
     else
       print "\n #{request.code}"
       print "=============================== DEU ERRADO ==========================="
+      return false
     end
   end
 end
