@@ -1,6 +1,7 @@
 class Order < ApplicationRecord
   has_many_attached :images, dependent: :destroy
   has_one :budget, dependent: :destroy
+  has_one :rescheduling, dependent: :destroy
 
   belongs_to :category
   belongs_to :user

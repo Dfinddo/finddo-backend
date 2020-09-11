@@ -77,6 +77,8 @@ Rails.application.routes.draw do
       get '/orders/:id', to: 'orders#show'
       put '/orders/:id', to: 'orders#update'
       delete '/orders/:id', to: 'orders#destroy'
+      post 'orders/:id/reschedulings', to: 'orders#create_rescheduling'
+      put 'orders/:id/reschedulings/:accepted', to: 'orders#update_rescheduling'
 
       # Adresses
       get '/addresses/user/:user_id', to: 'addresses#get_by_user'

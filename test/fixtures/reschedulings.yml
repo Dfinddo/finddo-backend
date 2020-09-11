@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  date_order: 2020-09-11 01:54:20
+  hora_inicio: MyString
+  hora_fim: MyString
+  order: one
+
+two:
+  date_order: 2020-09-11 01:54:20
+  hora_inicio: MyString
+  hora_fim: MyString
+  order: two

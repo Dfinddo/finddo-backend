@@ -412,7 +412,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
         devices << order.professional_order.player_ids if order.professional_order
 
         if @notification_service.send_notification(devices, {}, 
-          content = "#{order.category.name} - desasociado do pedido")
+          content = "#{order.category.name} - desassociado do pedido")
           order
         else
           raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
@@ -424,6 +424,57 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
           order.errors, 'falha ao atualizar pedido na base de dados.'
         )
       end
+    end
+  end
+
+  def create_rescheduling(order, rescheduling_params)
+    rescheduling_params.delete(:user_accepted)
+    rescheduling_params.delete(:professional_accepted)
+
+    order.rescheduling.destroy if order.rescheduling
+    order.build_rescheduling(rescheduling_params)
+    
+    if order.save
+      devices = []
+      devices << order.professional_order.player_ids if order.professional_order
+      devices << order.user.player_ids
+
+      @notification_service.send_notification(devices, order.rescheduling, 
+        content = "#{order.category.name} - reagendamento")
+      order
+    else
+      raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+        order.errors, 'falha ao reagendar pedido.', 422
+      )
+    end
+  end
+
+  def update_rescheduling(order, user, accepted)
+    order.rescheduling.user_accepted = accepted if user == order.user
+    order.rescheduling.professional_accepted = accepted if user == order.professional_order
+
+    if order.rescheduling.save
+      devices = []
+      devices << order.professional_order.player_ids if order.professional_order
+      devices << order.user.player_ids
+
+      if order.rescheduling.user_accepted.nil? || order.rescheduling.professional_accepted.nil?
+        @notification_service.send_notification(devices, order.rescheduling, 
+          content = "#{order.category.name} - reagendamento")
+        order
+      elsif order.rescheduling.user_accepted == order.rescheduling.professional_accepted
+        @notification_service.send_notification(devices, order.rescheduling, 
+          content = "#{order.category.name} - reagendamento confirmado")
+        order
+      else
+        @notification_service.send_notification(devices, order.rescheduling, 
+          content = "#{order.category.name} - reagendamento recusado")
+        order
+      end
+    else
+      raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
+        order.errors, 'falha ao reagendar pedido.', 422
+      )
     end
   end
 

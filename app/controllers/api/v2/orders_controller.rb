@@ -3,7 +3,8 @@ class Api::V2::OrdersController < Api::V2::ApiController
   before_action :require_login, except: [:payment_webhook]
   before_action :set_order, only: [:show, :update, :destroy, 
     :associate_professional, :propose_budget, :budget_approve, :create_order_wirecard,
-    :create_payment, :cancel_order, :disassociate_professional]
+    :create_payment, :cancel_order, :disassociate_professional, :create_rescheduling,
+    :update_rescheduling]
 
   # GET api/v2/orders/:id
   def show
@@ -124,6 +125,26 @@ class Api::V2::OrdersController < Api::V2::ApiController
     end
   end
 
+  def create_rescheduling
+    begin
+      @order = @order_service.create_rescheduling(@order, rescheduling_params)
+      render json: @order, status: :ok
+    rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
+      render json: e.get_error_object[:error_obj], status: e.get_error_object[:error_status]
+    end
+  end
+
+  def update_rescheduling
+    begin
+      @order = @order_service
+        .update_rescheduling(@order, session_user, 
+        ActiveModel::Type::Boolean.new.cast(params[:accepted]))
+      render json: @order, status: :ok
+    rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
+      render json: e.get_error_object[:error_obj], status: e.get_error_object[:error_status]
+    end
+  end
+
   private
 
     def set_services
@@ -160,6 +181,14 @@ class Api::V2::OrdersController < Api::V2::ApiController
         .permit(
           :cep, :complement, :district, :name,
           :number, :selected, :street
+        )
+    end
+
+    def rescheduling_params
+      params.require(:rescheduling)
+        .permit(
+          :date_order, :hora_inicio, :hora_fim,
+          :user_accepted, :professional_accepted
         )
     end
 

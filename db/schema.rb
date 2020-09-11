@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_08_27_005124) do
+ActiveRecord::Schema.define(version: 2020_09_11_015420) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -97,6 +97,18 @@ ActiveRecord::Schema.define(version: 2020_08_27_005124) do
     t.index ["user_id"], name: "index_orders_on_user_id"
   end
 
+  create_table "reschedulings", force: :cascade do |t|
+    t.datetime "date_order"
+    t.string "hora_inicio"
+    t.string "hora_fim"
+    t.bigint "order_id", null: false
+    t.boolean "user_accepted"
+    t.boolean "professional_accepted"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["order_id"], name: "index_reschedulings_on_order_id"
+  end
+
   create_table "subcategories", force: :cascade do |t|
     t.string "name"
     t.bigint "category_id"
@@ -173,6 +185,7 @@ ActiveRecord::Schema.define(version: 2020_08_27_005124) do
   add_foreign_key "orders", "addresses"
   add_foreign_key "orders", "categories"
   add_foreign_key "orders", "users"
+  add_foreign_key "reschedulings", "orders"
   add_foreign_key "subcategories", "categories"
   add_foreign_key "user_profile_photos", "users"
 end
