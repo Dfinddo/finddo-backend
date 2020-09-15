@@ -309,36 +309,25 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
   def propose_budget(order, params)
     payload = {}
     order.budget.destroy if order.budget
-    budget = Budget.create(
-      order: order, budget: params[:budget], 
-      is_previous: params[:is_previous])
-    payload[:budget] = budget
-    order.reload
-    payload[:order] = OrderSerializer.new order
+    
+    budget = Budget.new(params)
+    budget.order = order
+    budget.attributes = @payment_gateway_service.calculate_service_value(params[:budget])
+    budget.total_value = budget.value_with_tax + budget.material_value
+    budget.save
+
+    payload[:budget] = BudgetSerializer.new budget
 
     devices = order.user.player_ids
 
-    if devices.empty?
-      budget.destroy
-      raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
-        nil, 'Usuário não está logado', 422
-      )
-    else
-      req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
-          body: { 
-            app_id: ENV['ONE_SIGNAL_APP_ID'], 
-            include_player_ids: devices,
-            data: payload,
-            contents: { en: "Seu pedido recebeu um orçamento." } })
+    req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
+        body: { 
+          app_id: ENV['ONE_SIGNAL_APP_ID'], 
+          include_player_ids: devices,
+          data: payload,
+          contents: { en: "Seu pedido recebeu um orçamento." } })
 
-      if req.code == 200
-        payload
-      else
-        raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
-          nil, 'Falha ao enviar a notificação.'
-        )
-      end
-    end
+    payload
   end
 
   def create_wirecard_order(order, price, session_user)

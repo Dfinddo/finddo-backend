@@ -82,7 +82,7 @@ class Api::V2::OrdersController < Api::V2::ApiController
 
   def propose_budget
     begin
-      payload = @order_service.propose_budget(@order, params)
+      payload = @order_service.propose_budget(@order, budget_params)
       render json: payload, status: :ok
     rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
       render json: e.get_error_object[:error_obj], status: e.get_error_object[:error_status]
@@ -190,6 +190,10 @@ class Api::V2::OrdersController < Api::V2::ApiController
           :date_order, :hora_inicio, :hora_fim,
           :user_accepted, :professional_accepted
         )
+    end
+
+    def budget_params
+      params.permit(:budget, :is_previous, :material_value)
     end
 
     def image_io(image)

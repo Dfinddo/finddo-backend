@@ -286,19 +286,17 @@ class ServicesModule::V2::PaymentGatewayService < ServicesModule::V2::BaseServic
     end
   end
 
-  private
+  def calculate_service_value(value)
+    value_with_tax = 0
 
-    def calculate_service_value(value)
-      value_with_tax = 0
-
-      if value < 80
-        value_with_tax = value * 1.25
-      elsif value < 500
-        value_with_tax = value * 1.2
-      else
-        value_with_tax = value * 1.15
-      end
-
-      { value_with_tax: value_with_tax, tax_value: value_with_tax - value }
+    if value < 80
+      value_with_tax = value * 1.25
+    elsif value < 500
+      value_with_tax = value * 1.2
+    else
+      value_with_tax = value * 1.15
     end
+
+    { value_with_tax: value_with_tax, tax_value: value_with_tax - value }
+  end
 end
