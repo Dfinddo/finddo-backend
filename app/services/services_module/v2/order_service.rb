@@ -387,14 +387,9 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
         devices = order.user.player_ids
         devices << order.professional_order.player_ids if order.professional_order
 
-        if @notification_service.send_notification(devices, {}, 
+        @notification_service.send_notification(devices, {}, 
           content = "#{order.category.name} - Pedido cancelado")
-          order
-        else
-          raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
-            nil, 'falha ao se enviar a notificação, tente novamente', 400
-          )
-        end
+        order
       else
         raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
           order.errors, 'falha ao atualizar pedido na base de dados.'
@@ -411,14 +406,9 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
         devices = []
         devices << order.professional_order.player_ids if order.professional_order
 
-        if @notification_service.send_notification(devices, {}, 
+        @notification_service.send_notification(devices, {}, 
           content = "#{order.category.name} - desassociado do pedido")
-          order
-        else
-          raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
-            nil, 'falha ao se enviar a notificação, tente novamente', 400
-          )
-        end
+        order
       else
         raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
           order.errors, 'falha ao atualizar pedido na base de dados.'
