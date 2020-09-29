@@ -266,11 +266,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
       )
     end
 
-    if devices.empty?
-      raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
-        nil, 'O profissional não está logado.', 422
-      )
-    elsif payload[:accepted]
+    if payload[:accepted]
       req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
           body: { 
             app_id: ENV['ONE_SIGNAL_APP_ID'], 
@@ -278,31 +274,18 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
             data: payload,
             contents: { en: "O orçamento para o pedido foi aprovado." } })
       
-      if req.code == 200
-        order.budget.update(accepted: true)
-        payload
-      else
-        raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
-          nil, 'Falha ao enviar a notificação.'
-        )
-      end
-    else
-      if order.update({ order_status: :cancelado })
-        req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
-          body: { 
-            app_id: ENV['ONE_SIGNAL_APP_ID'], 
-            include_player_ids: devices,
-            data: payload,
-            contents: { en: "O orçamento para o pedido foi recusado." } })
-  
-        if req.code == 200
-          order.budget.update(accepted: false)
-        else
-          raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
-            nil, 'Falha ao enviar a notificação.'
-          )
-        end
-      end
+      order.budget.update(accepted: true)
+      payload
+    elsif order.budget.update(accepted: false)
+      req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
+        body: { 
+          app_id: ENV['ONE_SIGNAL_APP_ID'], 
+          include_player_ids: devices,
+          data: payload,
+          contents: { en: "O orçamento para o pedido foi recusado." } })
+      order.budget.destroy
+      order.reload
+      order
     end
   end
 
