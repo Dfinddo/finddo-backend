@@ -20,6 +20,10 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
 
     @order = Order.new(order_params)
 
+    if @order.previous_budget
+      @order.order_status = :agendando_visita
+    end
+
     Order.transaction do
       if(order_params[:address_id] == nil)
         @address = Address.new(address_params)
