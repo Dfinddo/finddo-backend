@@ -60,6 +60,7 @@ Rails.application.routes.draw do
       put 'users/player_id_notifications/:id', to: 'users#update_player_id'
       delete 'users/remove_player_id_notifications/:id/:player_id', to: 'users#remove_player_id'
       post 'users/get_token_wirecard', to: 'users#generate_access_token_professional'
+      post 'users/find_by_name', to: 'users#find_professional_by_name'
 
       # Orders
       put '/orders/disassociate/:id', to: 'orders#disassociate_professional'

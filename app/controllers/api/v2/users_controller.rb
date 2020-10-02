@@ -3,7 +3,8 @@ class Api::V2::UsersController < Api::V2::ApiController
   before_action :require_login, except: [:create, :generate_access_token_professional, :get_user]
   before_action :set_user, except: [
     :create, :get_user, :activate_user, :add_credit_card,
-    :get_customer_credit_card_data, :remove_customer_credit_card_data]
+    :get_customer_credit_card_data, :remove_customer_credit_card_data,
+    :find_professional_by_name]
 
   # GET /users
   def get_user
@@ -129,6 +130,13 @@ class Api::V2::UsersController < Api::V2::ApiController
     rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
       render json: e.get_error_object[:error_obj], status: e.get_error_object[:error_status]
     end
+  end
+
+  def find_professional_by_name
+    result = @user_service.find_professional_by_name(user_params[:name], params[:page])
+    result[:items] = result[:items].map { |item| SerializersModule::V2::UserSerializer.new item }
+
+    render json: result
   end
 
   private
