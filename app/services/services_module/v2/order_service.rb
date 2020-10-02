@@ -440,6 +440,10 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     end
   end
 
+  def direct_associate_professional(order, professional)
+    order.update({ professional_order: professional })
+  end
+
   # possível candidato a serviço
   def image_io(image)
     decoded_image = Base64.decode64(image[:base64])

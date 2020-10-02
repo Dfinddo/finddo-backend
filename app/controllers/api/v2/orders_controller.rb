@@ -4,7 +4,7 @@ class Api::V2::OrdersController < Api::V2::ApiController
   before_action :set_order, only: [:show, :update, :destroy, 
     :associate_professional, :propose_budget, :budget_approve, :create_order_wirecard,
     :create_payment, :cancel_order, :disassociate_professional, :create_rescheduling,
-    :update_rescheduling]
+    :update_rescheduling, :direct_associate_professional]
 
   # GET api/v2/orders/:id
   def show
@@ -143,6 +143,14 @@ class Api::V2::OrdersController < Api::V2::ApiController
     rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
       render json: e.get_error_object[:error_obj], status: e.get_error_object[:error_status]
     end
+  end
+
+  def direct_associate_professional
+    user = User.find_by(id: params[:professional_id])
+    @order_service.direct_associate_professional(@order, user)
+    @order.reload
+
+    render json: @order
   end
 
   private
