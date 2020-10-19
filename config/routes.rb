@@ -87,6 +87,9 @@ Rails.application.routes.draw do
       post '/addresses', to: 'addresses#create'
       put '/addresses/:id', to: 'addresses#update'
       delete '/addresses/:id', to: 'addresses#destroy'
+
+      post 'clients', to: 'clients#create'
+      get 'clients/:id', to: 'clients#show'
     end
   end
 end

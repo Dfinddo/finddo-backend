@@ -210,6 +210,7 @@ class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
     @users = User
         .includes(:user_profile_photo)
         .where("upper(name) LIKE upper(?)", "%#{name}%")
+        .where(user_type: :professional)
         .order(name: :asc).page(page)
 
     { items: @users, current_page: @users.current_page, total_pages: @users.total_pages }
