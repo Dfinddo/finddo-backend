@@ -5,9 +5,8 @@ class Order < ApplicationRecord
 
   belongs_to :category
   belongs_to :user
-  belongs_to :professional_order, 
-    class_name: "User", optional: true, 
-    foreign_key: :professional
+  belongs_to :professional_order, :class_name => 'User' #profissional que pegou a order.
+  belongs_to :selected_professional, :class_name => 'User' #para o filtro de profissionais.
   belongs_to :address
 
   # ordem dos passos sucedidos do pedido:
