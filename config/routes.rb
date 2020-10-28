@@ -87,6 +87,13 @@ Rails.application.routes.draw do
       post '/addresses', to: 'addresses#create'
       put '/addresses/:id', to: 'addresses#update'
       delete '/addresses/:id', to: 'addresses#destroy'
+      
+      # Chats
+      get '/chats/sender/:sender_id', to: 'chats#get_by_sender'
+      get '/chats/receiver/:receiver_id', to: 'chats#get_by_receiver'
+      post '/chats', to: 'chats#create'
+      put '/chats/:id', to: 'chats#update'
+      delete '/chats/:id', to: 'chats#destroy'
     end
   end
 end
