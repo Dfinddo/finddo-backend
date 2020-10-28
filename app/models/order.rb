@@ -7,6 +7,7 @@ class Order < ApplicationRecord
   belongs_to :user
   belongs_to :professional_order, :class_name => 'User' #profissional que pegou a order.
   belongs_to :selected_professional, :class_name => 'User' #para o filtro de profissionais.
+  belongs_to :order_chat, :class_name => 'Chat' #chat que faz referencia a um servico
   belongs_to :address
 
   # ordem dos passos sucedidos do pedido:
