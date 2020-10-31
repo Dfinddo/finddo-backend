@@ -44,6 +44,22 @@ OBS: Pode precisar de sudo
   - `rails db:seed`
 
 
+### Para dar push no heroku
+
+- Checando se existe um remote chamado heroku
+  - `git remote -v`
+    - Caso não exista
+      - `git remote add heroku https://git.heroku.com/nome_da_branch`
+
+- Dando push
+  - `git push heroku nome_da_branch:master`
+    - Em caso de erros por falhas no git
+      - `git push heroku nome_da_branch:master`
+
+- Atualizar as migrations no banco associado ao heroku
+  - `heroku run rails db:migrate`
+
+
 ### Referências documentais de APIs
 
 - Wirecard (Procurar por Marketplace)
