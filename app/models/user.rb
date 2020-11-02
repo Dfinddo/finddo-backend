@@ -12,7 +12,7 @@ class User < ActiveRecord::Base
 
   has_many :orders, dependent: :restrict_with_error
   
-  has_many :professional_order, :class_name => 'Order', :foreign_key => 'professional', dependent: :restrict_with_error #profissional que pegou o pedido.
+  has_many :orders_as_professional, :class_name => 'Order', :foreign_key => 'professional', dependent: :restrict_with_error #profissional que pegou o pedido.
   
   has_many :selected_professional, :class_name => 'Order', :foreign_key => 'selected_professional_id' # para o filtro de profissionais.
   
