@@ -106,7 +106,7 @@ ActiveRecord::Schema.define(version: 2020_10_28_035102) do
     t.datetime "updated_at", null: false
     t.bigint "user_id"
     t.integer "order_status", default: 0
-    t.bigint "professional_order_id"
+    t.bigint "professional"
     t.datetime "start_order"
     t.datetime "end_order"
     t.integer "price", default: 0, null: false
@@ -222,7 +222,7 @@ ActiveRecord::Schema.define(version: 2020_10_28_035102) do
   add_foreign_key "orders", "addresses"
   add_foreign_key "orders", "categories"
   add_foreign_key "orders", "users"
-  add_foreign_key "orders", "users", column: "professional_order_id"
+  add_foreign_key "orders", "users", column: "professional"
   add_foreign_key "orders", "users", column: "selected_professional_id"
   add_foreign_key "reschedulings", "orders"
   add_foreign_key "subcategories", "categories"
