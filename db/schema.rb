@@ -84,6 +84,21 @@ ActiveRecord::Schema.define(version: 2020_10_28_035102) do
     t.index ["sender_id"], name: "index_chats_on_sender_id"
   end
 
+  create_table "clients", force: :cascade do |t|
+    t.string "name"
+    t.integer "rate"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "documents", force: :cascade do |t|
+    t.integer "nr"
+    t.bigint "client_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["client_id"], name: "index_documents_on_client_id"
+  end
+
   create_table "orders", force: :cascade do |t|
     t.bigint "category_id"
     t.string "description"
@@ -91,6 +106,7 @@ ActiveRecord::Schema.define(version: 2020_10_28_035102) do
     t.datetime "updated_at", null: false
     t.bigint "user_id"
     t.integer "order_status", default: 0
+    t.bigint "professional_order_id"
     t.datetime "start_order"
     t.datetime "end_order"
     t.integer "price", default: 0, null: false
@@ -107,11 +123,9 @@ ActiveRecord::Schema.define(version: 2020_10_28_035102) do
     t.decimal "user_rate", precision: 2, scale: 1, default: "0.0"
     t.boolean "previous_budget", default: false
     t.bigint "previous_budget_value"
-    t.bigint "selected_professional_id", default: 0, null: false
-    t.bigint "professional_order_id", null: false
+    t.bigint "selected_professional_id"
     t.index ["address_id"], name: "index_orders_on_address_id"
     t.index ["category_id"], name: "index_orders_on_category_id"
-    t.index ["professional_order_id"], name: "index_orders_on_professional_order_id"
     t.index ["selected_professional_id"], name: "index_orders_on_selected_professional_id"
     t.index ["user_id"], name: "index_orders_on_user_id"
   end
@@ -204,6 +218,7 @@ ActiveRecord::Schema.define(version: 2020_10_28_035102) do
   add_foreign_key "chats", "orders"
   add_foreign_key "chats", "users", column: "receiver_id"
   add_foreign_key "chats", "users", column: "sender_id"
+  add_foreign_key "documents", "clients"
   add_foreign_key "orders", "addresses"
   add_foreign_key "orders", "categories"
   add_foreign_key "orders", "users"
