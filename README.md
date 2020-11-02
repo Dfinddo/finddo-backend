@@ -21,6 +21,9 @@
 - Rodar as migrações
   - `docker-compose run --rm app bundle exec rails db:migrate`
   
+- Desfazer as n ultimas alterações feitas a partir das migrations
+  - `docker-compose run --rm app bundle exec rails db:rollback STEP=n`
+  
 - Rodar o seed
   - `docker-compose run --rm app bundle exec rails db:seed`
   
