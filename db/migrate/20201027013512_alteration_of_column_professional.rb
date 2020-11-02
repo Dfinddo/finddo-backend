@@ -7,6 +7,7 @@ class AlterationOfColumnProfessional < ActiveRecord::Migration[6.0]
   end
   
   def down
+    rename_column :orders, :professional_order_id, :professional
     change_column_null :orders, :professional, :true
     remove_foreign_key :orders, column: :professional
     change_column :orders, :professional, :integer
