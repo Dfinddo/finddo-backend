@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_10_28_035102) do
+ActiveRecord::Schema.define(version: 2020_11_03_185547) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -123,10 +123,10 @@ ActiveRecord::Schema.define(version: 2020_10_28_035102) do
     t.decimal "user_rate", precision: 2, scale: 1, default: "0.0"
     t.boolean "previous_budget", default: false
     t.bigint "previous_budget_value"
-    t.bigint "selected_professional_id"
+    t.bigint "filtered_professional_id"
     t.index ["address_id"], name: "index_orders_on_address_id"
     t.index ["category_id"], name: "index_orders_on_category_id"
-    t.index ["selected_professional_id"], name: "index_orders_on_selected_professional_id"
+    t.index ["filtered_professional_id"], name: "index_orders_on_filtered_professional_id"
     t.index ["user_id"], name: "index_orders_on_user_id"
   end
 
@@ -222,8 +222,8 @@ ActiveRecord::Schema.define(version: 2020_10_28_035102) do
   add_foreign_key "orders", "addresses"
   add_foreign_key "orders", "categories"
   add_foreign_key "orders", "users"
+  add_foreign_key "orders", "users", column: "filtered_professional_id"
   add_foreign_key "orders", "users", column: "professional"
-  add_foreign_key "orders", "users", column: "selected_professional_id"
   add_foreign_key "reschedulings", "orders"
   add_foreign_key "subcategories", "categories"
   add_foreign_key "user_profile_photos", "users"
