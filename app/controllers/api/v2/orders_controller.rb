@@ -182,8 +182,8 @@ class Api::V2::OrdersController < Api::V2::ApiController
           :hora_inicio, :hora_fim,
           :user_rate, :previous_budget,
           :previous_budget_value,
-          :professional_order,
-          :selected_professional,
+          :professional,
+          :filtered_professional_id,
           :order_chat)
     end
 

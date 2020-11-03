@@ -1,5 +1,6 @@
 class Api::V2::ChatsController < Api::V2::ApiController
    before_action :require_login
+   before_action :set_chat, only: [:show, :update, :destroy]
    
    #GET /chats
    def index
@@ -30,6 +31,14 @@ class Api::V2::ChatsController < Api::V2::ApiController
   #POST /chats
   def create
     @chat = Chat.new(chat_params)
+    
+    @sender = User.find(chat_params[:sender_id])
+    @receiver = User.find(chat_params[:receiver_id])
+    @order = Order.find(chat_params[:order_id])
+
+    #if (@sender == @receiver) {
+      #do something
+    #}
 
     if @chat.save
       render json: @chat, status: :created
@@ -54,6 +63,11 @@ class Api::V2::ChatsController < Api::V2::ApiController
   end
   
   private
+    # Use callbacks to share common setup or constraints between actions.
+    def set_chat
+      @chat = Chat.find(params[:id])
+    end
+
     def chat_params
       params.require(:chat).permit(:message, :is_read, :sender_id, :receiver_id, :created_at, :updated_at, :order_id)
     end
