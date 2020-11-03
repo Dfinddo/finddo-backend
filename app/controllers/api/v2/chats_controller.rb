@@ -55,7 +55,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
   
   private
     def chat_params
-      params.require(:chat, :message, :is_read, :sender_id, :receiver_id, :created_at, :updated_at).permit(:order_id)
+      params.require(:chat).permit(:message, :is_read, :sender_id, :receiver_id, :created_at, :updated_at, :order_id)
     end
   
 end
