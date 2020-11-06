@@ -44,9 +44,11 @@ class Api::V2::ChatsController < Api::V2::ApiController
     @receiver = User.find(chat_params[:receiver_id])
     @order = Order.find(chat_params[:order_id])
 
-    #if (@sender == @receiver) {
-      #do something
-    #}
+    if (@sender == @receiver)
+      render json: {"error": "Error: Sender can not be the same as receiver."}
+      return
+    end
+    
 
     if @chat.save
       render json: @chat, status: :created
