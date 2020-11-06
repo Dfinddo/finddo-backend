@@ -22,6 +22,14 @@ class Api::V2::ChatsController < Api::V2::ApiController
 
      render json: @chats
    end
+
+
+   #GET /chats/order/:id
+   def get_by_order
+    @chats = Chat.where(order_id: params[:order_id])
+
+    render json: @chats
+  end
   
   #GET /chats/:id
   def show
