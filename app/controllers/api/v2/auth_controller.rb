@@ -5,6 +5,7 @@ class Api::V2::AuthController < Api::V2::ApiController
     if user && user.valid_password?(params[:password])
       payload = { user_id: user.id }
       token = encode_token(payload)
+      user.update(temporary_token: token)
       render json: { user: SerializersModule::V2::UserSerializer.new(user).serializable_hash, jwt: token }
     else
       render json: { error: "Log in failed! Username or password invalid!" }, status: :bad_request
