@@ -15,7 +15,7 @@ class Api::V2::AuthController < Api::V2::ApiController
     if session_user
       render json: session_user
     else
-      render json: { errors: "No user logged in" }
+      render json: { errors: "No user logged in." }
     end
   end
 end

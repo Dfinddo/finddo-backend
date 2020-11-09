@@ -4,7 +4,7 @@ module Api::V2
     include SerializersModule::V2
 
     def encode_token(payload)
-      exp = Time.zone.now.to_i + 30 * 24 * 3600 # 30 dias
+      exp = Time.zone.now.to_i + 15 * 24 * 3600 # 15 dias
       payload[:exp] = exp
       JWT.encode(payload, "#{ENV['JWT_SECRET']}")
     end
