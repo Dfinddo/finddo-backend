@@ -39,11 +39,14 @@ class Api::V2::ChatsController < Api::V2::ApiController
     order = Order.find(params[:order_id].to_i)
     @chats = Chat.where(order_id: params[:order_id])
 
-    chat_sample = @chats[0]    
+    chat_sample = @chats[0]
     if ((session_user.id != chat_sample.sender_id && session_user.id != chat_sample.receiver_id) && session_user.user_type != "admin")
-      #ver por que apenas nesse caso, caso o session_user seja o admin, continua caindo aqui.
       render json: {"error": "Current user doesn't have permission to acess this."}
       return 400
+    end
+    
+    if (session_user.user_type != "admin" && (order.order_status == "finalizado" || order.order_status == "cancelado" || order.order_status == "analise"))
+      @chats = []
     end
 
     render json: @chats
