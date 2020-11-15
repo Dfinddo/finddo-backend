@@ -25,17 +25,35 @@ class Api::V2::ChatsController < Api::V2::ApiController
    end
   
    #GET /chats/receiver/:id
-   def get_by_receiver
-     @chats = Chat.where(receiver_id: params[:receiver_id])
+   #def get_admin_as_receiver
 
-     if (session_user.id != params[:receiver_id].to_i && session_user.user_type != "admin")
-      render json: {"error": "Error: Current user is not the sender or admin."}
-      return 400
-    end
+    #if (session_user.user_type != "admin")
+     # render json: {"Error": "Current user is not admin."}
+    #end
 
-     render json: @chats
-     #Fazer paginação nessa rota
-   end
+    #page = params[:page].to_i
+
+    #if page == 0
+     # page = 1
+
+    #elsif page < 0
+    #  render json: {"error": "Error: page is lesser then 1."}
+      #return 400
+
+    #end
+
+    #list = []
+
+    #chats = Chat.where(receiver_id: session_user.id).where(order_id: nil).order(sender_id: :asc, created_at: :desc).page(page)
+
+    #prev_sender_id = chat.sender_id
+    #for chat in chats
+      #current_sender_id = chat.sender_id
+      #if_
+
+    #end
+     
+   #end
 
 
    #GET /chats/order/?page=pagina&id=id
@@ -52,7 +70,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
     end
 
     order = Order.find(params[:order_id].to_i)
-    @chats = Chat.where(order_id: params[:order_id]).page(page)
+    @chats = Chat.where(order_id: params[:order_id]).order(created_at: :desc).page(page)
     total_pages = @chats.total_pages
 
     if page > total_pages
@@ -91,11 +109,11 @@ class Api::V2::ChatsController < Api::V2::ApiController
 
     end
     
-    orders = Order.where("user_id = ? OR professional = ?", session_user.id, session_user.id).page(page)#.where.not(order_status: :finalizado).where.not(order_status: :cancelado).where.not(order_status: :analise)
+    orders = Order.where("user_id = ? OR professional = ?", session_user.id, session_user.id).where.not(order_status: :finalizado).where.not(order_status: :cancelado).where.not(order_status: :analise).order(created_at: :desc).page(page)
     
     total = orders.total_pages
 
-    if page > total
+    if ((total > 0) && (page > total) )
       render json: {"error": "Error: page is greater then total_pages."}
       return 400
     end
@@ -247,7 +265,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
         return 200
       end
 
-      render json: {"error": "Error: Admin privileges required."}
+      render json: {"error": "Error: admin privileges required."}
       return 400
     end
   
