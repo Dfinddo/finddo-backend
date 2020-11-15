@@ -44,9 +44,11 @@ class Api::V2::ChatsController < Api::V2::ApiController
 
     if page == 0
       page = 1
+
     elsif page < 0
       render json: {"error": "Error: page is lesser then 1."}
       return 400
+
     end
 
     order = Order.find(params[:order_id].to_i)
@@ -78,7 +80,6 @@ class Api::V2::ChatsController < Api::V2::ApiController
   #GET /chats/list/?page=pagina
   def get_chat_list
     page = params[:page].to_i
-    i = 0
     list = []
 
     if page == 0
@@ -89,22 +90,24 @@ class Api::V2::ChatsController < Api::V2::ApiController
       return 400
 
     end
-    #list = select order_id, profile_photo as receiver_prophile_photo, service_type, receiver_name, title as service_type + receiver_name, message, created_at
-    #from chats inner join orders on (orders.id = chats.order_id) inner join users on (user.id = chats.sender_id) inner join photo on (user.id = photo.id) ver
+    
+    orders = Order.where("user_id = ? OR professional = ?", session_user.id, session_user.id).page(page)#.where.not(order_status: :finalizado).where.not(order_status: :cancelado).where.not(order_status: :analise)
+    
+    total = orders.total_pages
 
-    orders = Order.where("user_id = ? OR professional = ?", session_user.id, session_user.id)#.where.not(order_status: :finalizado).where.not(order_status: :cancelado).where.not(order_status: :analise)
+    if page > total
+      render json: {"error": "Error: page is greater then total_pages."}
+      return 400
+    end
     
     if orders == nil
       render json: {"error": "Error: Current user doesn't have any valid active orders."}
       return 400
     end
 
-    #Total de pedidos validos associados a alguma mensagem
-    total = orders.length
 
-      while(i < 10)
-        order = orders[ (page * 10) + i - 10]
-        
+      for order in orders
+
         #Loop chegou ao fim, pois os pedidos validos acabaram
         if order == nil
           break
@@ -112,7 +115,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
 
         order_id = order.id
         
-        #Encontra a ultima entrada em chats aonde o campo order_id é igual a variável order_id
+        #Encontra a ultima entrada em chats aonde o campo order_id é igual a variável order_id VER SE DA PARA OTIMIZAR !!!
         last_chat = Chat.where(order_id: order_id).last
         
         #Caso o determinado pedido ainda não tenha mensagens associadas a ele
@@ -141,10 +144,9 @@ class Api::V2::ChatsController < Api::V2::ApiController
         "title": title,
         "last_message": last_message
         }
-        i += 1
       end
 
-    render json: {"list": list, "page": page, "total": total}
+    render json: {"list": list, "page": orders.current_page, "total": total}
     return 200
   end
 
