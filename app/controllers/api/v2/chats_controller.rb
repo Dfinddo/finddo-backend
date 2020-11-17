@@ -109,7 +109,8 @@ class Api::V2::ChatsController < Api::V2::ApiController
 
     end
     
-    orders = Order.where("user_id = ? OR professional = ?", session_user.id, session_user.id).where.not(order_status: :finalizado).where.not(order_status: :cancelado).where.not(order_status: :analise).order(created_at: :desc).page(page)
+    orders = Order.where("user_id = ? OR professional = ?", session_user.id, session_user.id).where.not(order_status: :finalizado).where.not(order_status: :cancelado).where.not(order_status: :analise)
+    .order(created_at: :desc).page(page)
     
     total = orders.total_pages
 
@@ -123,7 +124,8 @@ class Api::V2::ChatsController < Api::V2::ApiController
       return 400
     end
 
-
+      #render json: orders
+      #return
       for order in orders
 
         #Loop chegou ao fim, pois os pedidos validos acabaram
@@ -148,7 +150,8 @@ class Api::V2::ChatsController < Api::V2::ApiController
           last_chat = OpenStruct.new({"message": nil, "created_at": nil, "receiver_id": receiver_id})
         end
 
-        receiver_profile_photo = User.find(last_chat.receiver_id).user_profile_photo
+        receiver_profile_photo = nil
+        #User.joins("INNER JOIN user_profile_photo ON user.user_id = user_prophile_photo.user_id")#.where("user_prophile_photo.user_id = ?",receiver_id)
 
         service_type = order.category.name + " - "
         receiver_name = User.find(last_chat.receiver_id).name
