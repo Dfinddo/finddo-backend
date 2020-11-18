@@ -71,9 +71,13 @@ class Api::V2::ChatsController < Api::V2::ApiController
 
     order = Order.find(params[:order_id].to_i)
     @chats = Chat.where(order_id: params[:order_id]).order(created_at: :desc).page(page)
+    
     total_pages = @chats.total_pages
 
-    if page > total_pages
+    if total_pages == 0
+      render json: {"error": "Error: required order doesn't have any chats associated with it."}
+      return 400
+    elsif page > total_pages
       render json: {"error": "Error: page is greater then total_pages."}
       return 400
     end
