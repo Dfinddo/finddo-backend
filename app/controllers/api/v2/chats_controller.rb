@@ -172,7 +172,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
         last_message = {"message": last_chat.message, "created_at": last_chat.created_at}
 
         list << {"order_id": order_id,
-        "receiver_profile_photo": receiver_profile_photo,
+        "receiver_profile_photo": receiver_profile_photo[:photo], # ver serializer. É isto que está bugando-o.
         "title": title,
         "last_message": last_message
         }
@@ -182,7 +182,8 @@ class Api::V2::ChatsController < Api::V2::ApiController
      # print("\n\n\n\n\n\n%s\n\n\n\n\n\n"% i)
     #end
     
-    return list
+    render json: {"list": list, "page": orders.current_page, "total": total}
+    return 200
   end
 
   #GET /chats/:id
