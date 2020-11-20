@@ -128,6 +128,8 @@ class Api::V2::ChatsController < Api::V2::ApiController
       return 400
     end
 
+      #render json: orders
+      #return
       for order in orders
 
         #Loop chegou ao fim, pois os pedidos validos acabaram
@@ -139,7 +141,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
         
         #Encontra a ultima entrada em chats aonde o campo order_id é igual a variável order_id VER SE DA PARA OTIMIZAR !!!
         last_chat = Chat.where(order_id: order_id).last
-
+        
         #Caso o determinado pedido ainda não tenha mensagens associadas a ele
         if last_chat == nil
 
@@ -149,39 +151,26 @@ class Api::V2::ChatsController < Api::V2::ApiController
             receiver_id = order.user.id
           end
 
-          #Simula a forma que a variavel teria caso não tivesse entrado nesta condicional, porém apenas com apenas com receiver_id preenchido.
-          last_chat = Chat.new
-          last_chat.receiver_id = receiver_id
-
+          last_chat = OpenStruct.new({"message": nil, "created_at": nil, "receiver_id": receiver_id})
         end
 
+        receiver_profile_photo = nil
+        #User.joins("INNER JOIN user_profile_photo ON user.user_id = user_prophile_photo.user_id")#.where("user_prophile_photo.user_id = ?",receiver_id)
 
-        #Pega a foto do receiver utilizando as funções de serviço de user.
-        receiver = User.find(last_chat.receiver_id)
-        receiver_profile_photo = receiver.user_profile_photo
-        
-        #receiver_profile_photo = UserProfilePhotoSerializer.new(receiver_profile_photo)
-        #render json: receiver_profile_photo
-        #return
-
-        #Faz o titulo
         service_type = order.category.name + " - "
         receiver_name = User.find(last_chat.receiver_id).name
+
         title = service_type + receiver_name
       
         last_message = {"message": last_chat.message, "created_at": last_chat.created_at}
 
         list << {"order_id": order_id,
-        "receiver_profile_photo": receiver_profile_photo[:photo], # ver serializer. É isto que está bugando-o.
+        "receiver_profile_photo": receiver_profile_photo,
         "title": title,
         "last_message": last_message
         }
       end
 
-    #for i in list
-     # print("\n\n\n\n\n\n%s\n\n\n\n\n\n"% i)
-    #end
-    
     render json: {"list": list, "page": orders.current_page, "total": total}
     return 200
   end
