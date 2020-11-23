@@ -92,11 +92,13 @@ Rails.application.routes.draw do
       get '/chats', to: 'chats#index'
       get '/chats/order/', to: 'chats#get_by_order'
       get 'chats/list', to: 'chats#get_chat_list'
-      get '/chats/admin/order', to: 'chats#admin_chat_from_order'
-      get '/chats/admin/list', to: 'chats#get_chat_with_admin_list'
-      get '/chats/receiver', to: 'chats#get_by_receiver'
+      get '/chats/order/admin', to: 'chats#admin_chat_from_order'
+      get '/chats/list/admin', to: 'chats#get_chat_with_admin_list'
       get '/chats', to: 'chats#show'
+      get '/chats/user/admin', to: 'chats#get_chat_with_admin'
+      get '/chats/admin/all', to: 'chats#for_admin_get_chat_list'
       post '/chats', to: 'chats#create'
+      post '/chats/admin', to: 'chats#create_chat_admin'
     end
   end
 end
