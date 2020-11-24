@@ -2,6 +2,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
    before_action :require_login
    before_action :set_chat, only: [:show]
    before_action :check_admin, only: [:index, :show]
+   before_action :set_user_services, only: [:get_chat_list, :get_chat_with_admin_list, :for_admin_get_chat_list]
    
    #GET /chats?page
    def index
@@ -163,9 +164,6 @@ class Api::V2::ChatsController < Api::V2::ApiController
        return 400
      end
 
-     #Faz a chamada para funções de serviço de user
-     user_services = ServicesModule::V2::UserService.new
-    
      orders = Order.where("user_id = ? OR professional = ?", session_user.id, session_user.id)
      .where.not(order_status: :finalizado)
      .where.not(order_status: :cancelado)
@@ -186,7 +184,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
      end
 
      for order in orders
-      
+
        order_id = order.id
         
        last_chat = Chat.where(order_id: order_id)
@@ -211,7 +209,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
         
        #Pega a foto do remetente
        receiver = User.find(receiver_id)
-       receiver_profile_photo = user_services.get_profile_photo(receiver)
+       receiver_profile_photo = @user_services.get_profile_photo(receiver)
        
        if receiver_profile_photo != nil
          receiver_profile_photo = UserProfilePhotoSerializer.new(receiver_profile_photo)
@@ -246,9 +244,6 @@ class Api::V2::ChatsController < Api::V2::ApiController
       return 400
      end
      
-     #Faz a chamada para funções de serviço de user
-     user_services = ServicesModule::V2::UserService.new
-
      if session_user.user_type == "user" || session_user.user_type == "professional"
 
        #Reescreve a váriavel for_admin recebida por parametro, caso o tipo de usuário seja user, ou professional.
@@ -299,7 +294,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
          end
 
          #Pega a foto do remetente
-         receiver_profile_photo = user_services.get_profile_photo(receiver)
+         receiver_profile_photo = @user_services.get_profile_photo(receiver)
 
          if receiver_profile_photo != nil
            receiver_profile_photo = UserProfilePhotoSerializer.new(receiver_profile_photo)
@@ -358,7 +353,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
          end
 
          #Pega a foto do remetente
-         receiver_profile_photo = user_services.get_profile_photo(receiver)
+         receiver_profile_photo = @user_services.get_profile_photo(receiver)
 
          if receiver_profile_photo != nil
            receiver_profile_photo = UserProfilePhotoSerializer.new(receiver_profile_photo)
@@ -415,10 +410,15 @@ class Api::V2::ChatsController < Api::V2::ApiController
     end
 
     order = Order.find_by(id: chat_params[:order_id])
+
+    if order == nil
+      render json: {"error": "Error: Order could not be found."}
+      return 400
+    end
   
     if (sender == receiver)
       render json: {"error": "Error: Sender can not be the receiver."}
-      return 401
+      return 400
     end
     
     sender_id = sender.id
@@ -510,9 +510,6 @@ class Api::V2::ChatsController < Api::V2::ApiController
       return 400
     end
 
-    #Faz a chamada para funções de serviço de user
-    user_services = ServicesModule::V2::UserService.new
-
     for user in users
 
       if user == nil
@@ -533,7 +530,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
       end
 
       #Pega a foto do usuário
-      user_profile_photo = user_services.get_profile_photo(user)
+      user_profile_photo = @user_services.get_profile_photo(user)
 
       if user_profile_photo != nil
         user_profile_photo = UserProfilePhotoSerializer.new(user_profile_photo)
@@ -620,6 +617,10 @@ class Api::V2::ChatsController < Api::V2::ApiController
       
       render json: {"error": "Error: admin privileges required."}
       return 400
+    end
+
+    def set_user_services
+      @user_services = ServicesModule::V2::UserService.new
     end
   
 end
