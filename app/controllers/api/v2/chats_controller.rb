@@ -186,12 +186,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
      end
 
      for order in orders
-
-       #Loop chegou ao fim, pois os pedidos validos acabaram
-       if order == nil
-         break
-       end
-
+      
        order_id = order.id
         
        last_chat = Chat.where(order_id: order_id)
@@ -263,7 +258,12 @@ class Api::V2::ChatsController < Api::V2::ApiController
          for_admin = 2
        end
 
-       orders = Order.where("user_id = ? OR professional = ?", session_user.id, session_user.id)
+       #Pega apenas os pedidos que já tiveram troca de mensagens entre usuário e admin
+       orders = Order.joins("LEFT JOIN chats on (orders.id = order_id)")
+       .where("sender_id = ? OR receiver_id = ?",session_user.id, session_user.id)
+       .where("chats.for_admin = ?", for_admin)
+       .where.not(order_status: :analise)
+       .distinct
        .order(created_at: :desc).page(page)
 
        total = orders.total_pages
@@ -280,34 +280,22 @@ class Api::V2::ChatsController < Api::V2::ApiController
        end
 
        for order in orders
-         #Loop chegou ao fim, pois os pedidos validos acabaram
-         if order == nil
-           break
-         end
 
          order_id = order.id
         
          last_chat = Chat.where(order_id: order_id)
          .where(for_admin: for_admin).last
 
-         #Caso o usuario não tenha enviado mensagens para o admin associado a este pedido
-         if last_chat == nil
-          list << nil
-          next
-         end
-
          sender = User.find(last_chat.sender_id)
          receiver = User.find(last_chat.receiver_id)
 
          if sender.user_type != "admin"
           name = receiver.name
-
          else
           name = sender.name
 
           #Para pegar a foto do admin, caso o usuário logado seja um professional, ou um user
           receiver = sender
-
          end
 
          #Pega a foto do remetente
@@ -335,7 +323,10 @@ class Api::V2::ChatsController < Api::V2::ApiController
      elsif session_user.user_type == "admin"
        
        for_admin = params[:for_admin].to_i
-       orders = Order.all
+       orders = Order.joins("LEFT JOIN chats on (orders.id = order_id)")
+       .where("chats.for_admin = ?",for_admin)
+       .where.not(order_status: :analise)
+       .distinct
        .order(created_at: :desc).page(page)
 
        total = orders.total_pages
@@ -346,10 +337,6 @@ class Api::V2::ChatsController < Api::V2::ApiController
        end
 
        for order in orders
-         #Nao tenho certeza se pode existir essa possibilidade nesse caso, mas vou manter aqui até finalizar os testes
-         if order == nil
-           break
-         end
 
          order_id = order.id
       
@@ -358,20 +345,12 @@ class Api::V2::ChatsController < Api::V2::ApiController
          .where(for_admin: for_admin)
          .last
 
-         #Caso o usuario, ou profissional associados a este pedido não tenham enviado mensagens para o admin
-         if last_chat == nil
-           list << nil
-           next
-         end
-         
          sender = User.find(last_chat.sender_id)
          receiver = User.find(last_chat.receiver_id)
 
          if sender.user_type == "admin"
           name = receiver.name
-
          else
-
           name = sender.name
 
           #Para pegar a foto do remetente (professional, ou user) caso o usuário logado seja um admin
