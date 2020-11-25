@@ -168,6 +168,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
      .where.not(order_status: :finalizado)
      .where.not(order_status: :cancelado)
      .where.not(order_status: :analise)
+     .where.not(professional: nil)
      .order(created_at: :desc).page(page)
     
      total = orders.total_pages
