@@ -24,6 +24,33 @@ class Api::V2::OrdersController < Api::V2::ApiController
     end
   end
 
+  #PUT /orders/problem_solved
+  def problem_solved
+    problem_solved = order_params[:problem_solved]
+    order_id = order_params[:id]
+    order = nil
+  
+    if session_user.user_type != "admin"
+      render json: {"error": "Error: need admin privileges."}
+      return 400
+    end
+    
+    if problem_solved != "true" && problem_solved != "false"
+      render json: {"error": "Error: Invalid value for problem_solved."}
+      return 400
+    end
+    
+    order = Order.find_by(id: order_id)
+
+    if order.update(order_params)
+      render json: order
+    else
+      render json: order.errors, status: :unprocessable_entity
+      return 400
+    end
+
+  end
+
   # GET /orders/user/:user_id/active
   def user_active_orders
     params["session_user_id"] = session_user.id
@@ -174,6 +201,7 @@ class Api::V2::OrdersController < Api::V2::ApiController
     def order_params
       params.require(:order)
         .permit(
+          :id,
           :category_id, :description, 
           :user_id, :urgency,
           :start_order, :end_order,
@@ -186,7 +214,8 @@ class Api::V2::OrdersController < Api::V2::ApiController
           :previous_budget_value,
           :professional,
           :filtered_professional_id,
-          :order_chat)
+          :order_chat,
+          :problem_solved)
     end
 
     def address_params

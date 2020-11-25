@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_11_22_001630) do
+ActiveRecord::Schema.define(version: 2020_11_25_160707) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -125,6 +125,7 @@ ActiveRecord::Schema.define(version: 2020_11_22_001630) do
     t.boolean "previous_budget", default: false
     t.bigint "previous_budget_value"
     t.bigint "filtered_professional_id"
+    t.boolean "problem_solved", default: false, null: false
     t.index ["address_id"], name: "index_orders_on_address_id"
     t.index ["category_id"], name: "index_orders_on_category_id"
     t.index ["filtered_professional_id"], name: "index_orders_on_filtered_professional_id"
