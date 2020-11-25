@@ -561,7 +561,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
       return 400
     end
 
-    if session_user.user_type != "admin"
+    if check_admin != 200
       chats = Chat.where(order_id: 170).where("sender_id = ? OR receiver_id = ?",session_user.id, session_user.id)
       .order(created_at: :desc).page(page)
     else
@@ -595,7 +595,6 @@ class Api::V2::ChatsController < Api::V2::ApiController
     def check_user_receiver
       #Não está em uso, mas escrito caso necessário.
       if (session_user != User.find(@chat.receiver_id) && session_user.user_type != "admin")
-        render json: {"error": "Error: Current user is not the receiver."}
         return 400
       end
 
@@ -604,7 +603,6 @@ class Api::V2::ChatsController < Api::V2::ApiController
 
     def check_user_sender
       if (session_user != User.find(@chat.sender_id) && session_user.user_type != "admin")
-        render json: {"error": "Error: Current user is not the sender."}
         return 400
       end
 
@@ -616,7 +614,6 @@ class Api::V2::ChatsController < Api::V2::ApiController
         return 200
       end
       
-      render json: {"error": "Error: admin privileges required."}
       return 400
     end
 

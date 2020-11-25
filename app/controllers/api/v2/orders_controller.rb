@@ -26,6 +26,7 @@ class Api::V2::OrdersController < Api::V2::ApiController
 
   # GET /orders/user/:user_id/active
   def user_active_orders
+    params["session_user_id"] = session_user.id
     render json: @order_service.user_active_orders(params)
   end
 
@@ -36,6 +37,7 @@ class Api::V2::OrdersController < Api::V2::ApiController
 
   # GET /orders/active_orders_professional/:user_id
   def associated_active_orders
+    params["session_user_id"] = session_user.id
     render json: @order_service.associated_active_orders(params)
   end
 
