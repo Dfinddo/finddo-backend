@@ -75,11 +75,11 @@ Rails.application.routes.draw do
       get '/orders/user/active', to: 'orders#user_active_orders'
       get '/orders/active_orders_professional/', to: 'orders#associated_active_orders'
       post '/orders', to: 'orders#create'
+      put '/orders/problem_solved', to: 'orders#problem_solved'
       get '/orders/:id', to: 'orders#show'
       put '/orders/:id', to: 'orders#update'
       delete '/orders/:id', to: 'orders#destroy'
       post 'orders/:id/reschedulings', to: 'orders#create_rescheduling'
-      put '/orderss/problem_solved', to: 'orders#problem_solved'
       put 'orders/:id/reschedulings/:accepted', to: 'orders#update_rescheduling'
       put 'orders/direct_associate_professional/:id/:professional_id', to: 'orders#direct_associate_professional'
     
