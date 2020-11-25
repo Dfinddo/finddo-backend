@@ -20,9 +20,10 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
 
     @order = Order.new(order_params)
 
-    if @order.previous_budget
-      @order.order_status = :agendando_visita
-    end
+    #Verificar com o Perrut
+    #if @order.previous_budget
+     # @order.order_status = :agendando_visita
+    #end
 
     Order.transaction do
       if(order_params[:address_id] == nil)
@@ -126,10 +127,6 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
       .with_attached_images
       .where({professional_order: nil})
       .where({order_status: :analise})
-      #.where.not(order_status: :finalizado)
-      #.where.not(order_status: :cancelado)
-      #.where.not(order_status: :processando_pagamento)
-      #.where.not(order_status: :recusado)
       .order(urgency: :asc).order(start_order: :asc).page(params[:page])
     
     { items: @orders.map { |order| OrderSerializer.new order }, current_page: @orders.current_page, total_pages: @orders.total_pages }
