@@ -209,7 +209,8 @@ class Api::V2::ChatsController < Api::V2::ApiController
      service_type = nil
      title = nil
      last_message = nil
-     
+     another_user_id = nil
+
      session_user_id = session_user.id
      session_user_type = check_user_type
      page = params[:page].to_i
@@ -270,7 +271,10 @@ class Api::V2::ChatsController < Api::V2::ApiController
          last_chat = Chat.new({"receiver_id": receiver_id})
 
        end
-        
+       
+       #Pega o id do usuário do outro lado, não importanto quem foi o último a mandar mensagem. Neste caso será sempre igual a varavel receiver_id definida acima
+       another_user_id = receiver_id
+
        #Pega a foto do remetente
        receiver = User.find(receiver_id)
        receiver_profile_photo = @user_services.get_profile_photo(receiver)
@@ -286,6 +290,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
        last_message = {"message": last_chat.message, "created_at": last_chat.created_at}
 
        list << {"order_id": order_id,
+       "another_user_id": another_user_id,
        "receiver_profile_photo": receiver_profile_photo,
        "title": title,
        "last_message": last_message
@@ -314,6 +319,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
      sender_user_type = nil
      receiver_user_type = nil
      receiver_profile_photo = nil
+     another_user_id = nil
      service_type = nil
      title = nil
 
@@ -369,8 +375,9 @@ class Api::V2::ChatsController < Api::V2::ApiController
          else
           name = sender.name
 
-          #Para pegar a foto do admin, caso o usuário logado seja um professional, ou um user
+          #Para pegar a foto, e id do admin, caso o usuário logado seja um professional, ou um user
           receiver = sender
+          another_user_id = receiver.id
          end
 
          #Pega a foto do remetente
@@ -387,6 +394,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
          last_message = {"message": last_chat.message, "created_at": last_chat.created_at}
 
          list << {"order_id": order_id,
+         "another_user_id": another_user_id,
          "receiver_profile_photo": receiver_profile_photo,
          "title": title,
          "last_message": last_message,
@@ -428,8 +436,9 @@ class Api::V2::ChatsController < Api::V2::ApiController
          else
           name = sender.name
 
-          #Para pegar a foto do remetente (professional, ou user) caso o usuário logado seja um admin
+          #Para pegar a foto, e o id do remetente (professional, ou user) caso o usuário logado seja um admin
           receiver = sender
+          another_user_id = receiver.id
          end
 
          #Pega a foto do remetente
@@ -456,6 +465,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
          last_message = {"message": last_chat.message, "created_at": last_chat.created_at}
 
          list << {"order_id": order_id,
+         "another_user_id": another_user_id,
          "receiver_profile_photo": receiver_profile_photo,
          "title": title,
          "last_message": last_message
@@ -586,6 +596,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
     chat = nil
     title = nil
     user_profile_photo = nil
+    another_user_id = nil
     last_message = nil
 
     if check_admin != 200
@@ -636,13 +647,17 @@ class Api::V2::ChatsController < Api::V2::ApiController
       #Pega a foto do usuário
       user_profile_photo = @user_services.get_profile_photo(user)
 
+      #Pega o id do usuário
+      another_user_id = user.id
+
       if user_profile_photo != nil
         user_profile_photo = UserProfilePhotoSerializer.new(user_profile_photo)
       end
 
       last_message = {"message": chat.message, "created_at": chat.created_at}
 
-      list << {"user_profile_photo": user_profile_photo,
+      list << {"another_user_id",
+        "user_profile_photo": user_profile_photo,
         "title": title,
         "last_message": last_message
         }
