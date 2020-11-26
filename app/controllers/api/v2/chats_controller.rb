@@ -656,7 +656,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
 
       last_message = {"message": chat.message, "created_at": chat.created_at}
 
-      list << {"another_user_id",
+      list << {"another_user_id": another_user_id,
         "user_profile_photo": user_profile_photo,
         "title": title,
         "last_message": last_message
