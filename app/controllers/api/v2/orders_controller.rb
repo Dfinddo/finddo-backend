@@ -24,6 +24,11 @@ class Api::V2::OrdersController < Api::V2::ApiController
     end
   end
 
+  def expired_order
+    render json: DateTime.now
+    return
+  end
+  
   #PUT /orders/problem_solved
   def problem_solved
     problem_solved = order_params[:problem_solved]

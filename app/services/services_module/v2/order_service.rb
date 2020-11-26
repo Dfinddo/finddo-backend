@@ -85,7 +85,12 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
 
     order.with_lock do
       order.professional_order = user
-      order.order_status = :orcamento_previo
+
+      if order.previous_budget == true
+        order.order_status = :orcamento_previo
+      else
+        order.order_status = :agendando_visita
+      end
       
       if !order.save
         raise ServicesModule::V2::ExceptionsModule::OrderException.new(order.errors)
