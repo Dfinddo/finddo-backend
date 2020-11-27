@@ -23,4 +23,26 @@ class ServicesModule::V2::NotificationService < ServicesModule::V2::BaseService
       return false
     end
   end
+
+  def send_notification_with_user_id(user_id, data, content)
+    user = User.find_by(id: user_id)
+
+    if user == nil
+      raise ServicesModule::V2::ExceptionsModule::UserException.new(nil, "Usuário não existe.")
+    end
+
+    devices = user.player_ids
+    
+    try = send_notification(devices, data, content)
+
+    if try == true
+      #Notificação realizada
+      return 200
+    else
+      #Notificação falhou
+      return 400
+    end
+    
+  end
+
 end

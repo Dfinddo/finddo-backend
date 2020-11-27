@@ -101,6 +101,10 @@ Rails.application.routes.draw do
       get '/chats/admin/all', to: 'chats#for_admin_get_chat_list'
       post '/chats', to: 'chats#create'
       post '/chats/admin', to: 'chats#create_chat_admin'
+
+      # Notifications
+      post 'notification', to: 'notification#send_notification_with_user_id'
+      
     end
   end
 end
