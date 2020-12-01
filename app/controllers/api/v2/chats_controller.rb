@@ -484,6 +484,12 @@ class Api::V2::ChatsController < Api::V2::ApiController
 
   #GET /chats?id
   def show
+
+    if check_admin != 200
+      render json: {"error": "Error: Admin privileges required."}
+      return 400
+     end
+
     render json: @chat
     return 200
   end
@@ -515,8 +521,14 @@ class Api::V2::ChatsController < Api::V2::ApiController
       render json: {"error": "Error: Sender can not be the receiver."}
       return 400
     end
-    
+  
     sender_id = sender.id
+
+    if order.user_id != sender_id && order.professional_order.id != sender_id
+      render json: {"error": "Error: Permission denied. Session user is neither the sender or the receiver."}
+      return 400
+    end
+
     chat.sender_id = sender_id
 
     if chat.save
@@ -551,6 +563,11 @@ class Api::V2::ChatsController < Api::V2::ApiController
   
     if (sender == receiver)
       render json: {"error": "Error: Sender can not be the receiver."}
+      return 400
+    end
+
+    if sender_user_type != 3 && receiver_user_type != 3
+      render json: {"error": "Error: Admin is neither sender or receiver."}
       return 400
     end
 
