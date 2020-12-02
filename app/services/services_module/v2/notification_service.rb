@@ -9,7 +9,7 @@ class ServicesModule::V2::NotificationService < ServicesModule::V2::BaseService
     body = {
       app_id: ENV['ONE_SIGNAL_APP_ID'], 
       include_player_ids: devices,
-      data: data,
+      #data: data,
       contents: { 'en': content }}
 
     request = @rest_service.post(@onesignal_url, body)
