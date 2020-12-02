@@ -103,7 +103,7 @@ Rails.application.routes.draw do
       post '/chats/admin', to: 'chats#create_chat_admin'
 
       # Notifications
-      post 'notification', to: 'notification#send_notification_with_user_id'
+      post 'notification', to: 'notification#send_notification_2'
       
     end
   end

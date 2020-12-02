@@ -45,7 +45,7 @@ class ServicesModule::V2::NotificationService < ServicesModule::V2::BaseService
     
   end
 
-  def send_notification2(user_id, data = {}, content = '')
+  def send_notification_2(user_id, data = {}, content = '')
     body = {
       app_id: ENV['ONE_SIGNAL_APP_ID'], 
       include_external_user_ids: [user_id],
