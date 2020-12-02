@@ -104,7 +104,7 @@ Rails.application.routes.draw do
 
       # Notifications
       post 'notification', to: 'notification#send_notification_with_user_id'
-      get 'notifications/get_player_id', to: 'notification#get_player_id'
+      get 'notifications/send_player_id', to: 'notification#get_player_id'
       
     end
   end
