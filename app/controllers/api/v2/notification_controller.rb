@@ -5,7 +5,9 @@ class Api::V2::NotificationController < Api::V2::ApiController
     #POST notification/send_notification
     def send_notification_with_user_id
         user_id = notification_params[:user_id].to_i
-        data = notification_params[:data]
+        data = {teste: "teste"}
+        render json: data
+        return
         content = notification_params[:content]
 
         try = @notification_service.send_notification_with_user_id(user_id, data, content)
@@ -30,6 +32,10 @@ class Api::V2::NotificationController < Api::V2::ApiController
               :user_id,
               :data,
               :content)
+    end
+
+    def data_params
+        params.require(:data)
     end
 
     def set_services
