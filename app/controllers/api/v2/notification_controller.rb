@@ -18,6 +18,23 @@ class Api::V2::NotificationController < ApplicationController
         return 200
     end
 
+    #POST
+    def send_notification_2
+        user_id = notification_params[:user_id].to_i
+        data = notification_params[:data]
+        content = notification_params[:content]
+
+        try = @notification_service.send_notification_2(user_id, data, content)
+
+        if try == 400
+            render json: {"error": "Error: Notification could not be sent."}
+            return 400
+        end
+
+        render json: notification_params
+        return 200
+    end
+
     private
     def notification_params
         params.require(:notification)
