@@ -45,24 +45,21 @@ class ServicesModule::V2::NotificationService < ServicesModule::V2::BaseService
     
   end
 
-  def send_notification_2(user_id, data = {}, content = '')
-    body = {
-      app_id: ENV['ONE_SIGNAL_APP_ID'], 
-      include_external_user_ids: [user_id],
-      Authorization: "Basic YmZhNjc0MzQtMmU4YS00ZjJlLThmODEtMzFmNTVlMmEwNDJm",
-      data: data,
-      contents: { 'en': content }}
-
-    request = @rest_service.post(@onesignal_url, body)
-
-    if request.code == 200
-      print "=============================== DEU CERTO ==========================="
-      return true
-    else
-      print "\n #{request.code}"
-      print "=============================== DEU ERRADO ==========================="
-      return false
+  def save_player_id(user_id, player_id)
+    user = User.find_by(id :user_id)
+  
+    if user == nil
+      return 400
     end
+
+    player_ids = user.player_ids
+
+    if player_ids == nil
+      user.update(player_ids: [player_id])
+      return true
+    end
+
+    return false
   end
 
 end
