@@ -61,6 +61,7 @@ Rails.application.routes.draw do
       delete 'users/remove_player_id_notifications/:id/:player_id', to: 'users#remove_player_id'
       post 'users/get_token_wirecard', to: 'users#generate_access_token_professional'
       post 'users/find_by_name', to: 'users#find_professional_by_name'
+      get 'users/set_player_id', to: 'users#set_player_id'
 
       # Orders
       put '/orders/disassociate/:id', to: 'orders#disassociate_professional'
@@ -104,8 +105,7 @@ Rails.application.routes.draw do
 
       # Notifications
       post 'notification', to: 'notification#send_notification_with_user_id'
-      get 'send_player_id', to: 'notification#get_player_id'
-      
+
     end
   end
 end

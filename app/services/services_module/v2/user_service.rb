@@ -125,6 +125,30 @@ class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
     end
   end
 
+  def set_player_id(user_id, player_id)
+    user = User.find_by(id: user_id)
+  
+    if user == nil
+      return 400
+    end
+
+    player_ids = user.player_ids
+  
+    if player_ids.length == 0 || player_ids == [nil]
+      user.player_ids << player_id
+      
+      if user.save
+        return true
+      else
+        return 400
+      end
+      
+    end
+
+    return false
+  end
+
+  #Ver para que serve
   def update_player_id(user, params)
     if params[:player_id].nil? || params[:player_id].empty? || params[:player_id].length < 10
       raise ServicesModule::V2::ExceptionsModule::UserException.new(nil, "Player id inválido")

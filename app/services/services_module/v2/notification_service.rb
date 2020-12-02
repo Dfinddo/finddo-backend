@@ -28,7 +28,7 @@ class ServicesModule::V2::NotificationService < ServicesModule::V2::BaseService
     user = User.find_by(id: user_id)
 
     if user == nil
-      raise ServicesModule::V2::ExceptionsModule::UserException.new(nil, "Usuário não existe.")
+      return 400
     end
 
     devices = user.player_ids
@@ -40,26 +40,9 @@ class ServicesModule::V2::NotificationService < ServicesModule::V2::BaseService
       return 200
     else
       #Notificação falhou
-      return 400
+      return 401
     end
     
-  end
-
-  def save_player_id(user_id, player_id)
-    user = User.find_by(id: user_id)
-  
-    if user == nil
-      return 400
-    end
-
-    player_ids = user.player_ids
-
-    if player_ids == nil
-      user.update(player_ids: [player_id])
-      return true
-    end
-
-    return false
   end
 
 end

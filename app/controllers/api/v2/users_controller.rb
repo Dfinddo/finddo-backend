@@ -4,7 +4,7 @@ class Api::V2::UsersController < Api::V2::ApiController
   before_action :set_user, except: [
     :create, :get_user, :activate_user, :add_credit_card,
     :get_customer_credit_card_data, :remove_customer_credit_card_data,
-    :find_professional_by_name]
+    :find_professional_by_name, :set_player_id]
 
   # GET /users
   def get_user
@@ -72,6 +72,57 @@ class Api::V2::UsersController < Api::V2::ApiController
       render json: e.user_errors, status: :unprocessable_entity
     end
   end
+
+  def set_player_id
+    player_id = params[:player_id]
+    user = session_user
+    user_id = user.id
+    flag = 0
+
+    try = @user_service.set_player_id(user_id, player_id)
+    
+    if try == true
+        print "=============================== DEU CERTO ==========================="
+        player_ids = user.player_ids
+        render json: {"player_id": player_id}
+        return true
+    elsif try == false
+        print "=============================== JA TEM PLAYER_ID ==========================="
+        
+        player_ids = user.player_ids
+
+        #Checa se o player_id recebido está presente no array de player_ids do usuário
+        check = player_ids.include?(player_id)
+
+        if check == false
+          #Caso esteja
+          flag = 1
+        end
+
+        if flag == 1
+          
+          #Este usuário logou em um dispositivo que não está listado no banco de dados e precisa ser incluído atraves de seu player_id.
+          user.player_ids << player_id
+
+          if user.save
+            render json: {"debug": "Player_id saved."}
+            return true
+          else
+            render json: {"error": "Error: Coudn't append player_id."}
+            return 400
+          end
+
+        end
+
+        #O player_id recebido já existe para este usuário.
+        render json: {"warning": "Player_id found in user's player_ids."}
+        return false
+    end
+
+    print "=============================== DEU ERRADO ==========================="
+    render json: {"error": "Error: Coudn't save player_id."}
+    return 400
+end
 
   def update_player_id
     begin
