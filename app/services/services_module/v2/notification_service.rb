@@ -46,7 +46,7 @@ class ServicesModule::V2::NotificationService < ServicesModule::V2::BaseService
   end
 
   def save_player_id(user_id, player_id)
-    user = User.find_by(id :user_id)
+    user = User.find_by(id: user_id)
   
     if user == nil
       return 400

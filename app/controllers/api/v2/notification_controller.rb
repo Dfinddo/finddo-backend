@@ -1,4 +1,5 @@
-class Api::V2::NotificationController < ApplicationController
+class Api::V2::NotificationController < Api::V2::ApiController
+    before_action :require_login
     before_action :set_services
 
     #POST notification/send_notification
