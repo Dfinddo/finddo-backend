@@ -45,4 +45,23 @@ class ServicesModule::V2::NotificationService < ServicesModule::V2::BaseService
     
   end
 
+  def send_notification2(user_id, data = {}, content = '')
+    body = {
+      app_id: ENV['ONE_SIGNAL_APP_ID'], 
+      include_external_user_ids: [user_id],
+      data: data,
+      contents: { 'en': content }}
+
+    request = @rest_service.post(@onesignal_url, body)
+
+    if request.code == 200
+      print "=============================== DEU CERTO ==========================="
+      return true
+    else
+      print "\n #{request.code}"
+      print "=============================== DEU ERRADO ==========================="
+      return false
+    end
+  end
+
 end
