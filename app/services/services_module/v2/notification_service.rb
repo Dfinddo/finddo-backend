@@ -49,6 +49,7 @@ class ServicesModule::V2::NotificationService < ServicesModule::V2::BaseService
     body = {
       app_id: ENV['ONE_SIGNAL_APP_ID'], 
       include_external_user_ids: [user_id],
+      Authorization: "Basic YmZhNjc0MzQtMmU4YS00ZjJlLThmODEtMzFmNTVlMmEwNDJm",
       data: data,
       contents: { 'en': content }}
 
