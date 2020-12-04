@@ -24,8 +24,8 @@ class Api::V2::OrdersController < Api::V2::ApiController
     end
   end
 
-  def expired_order
-    render json: DateTime.now
+  def expired_orders
+    @order_service.expired_orders
     return
   end
   
