@@ -88,7 +88,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
       return 400
     end
     
-    if (session_user_type != 3 && (order_status == "finalizado" || order_status == "cancelado" || order_status == "analise"))
+    if (session_user_type != 3 && (order_status == "finalizado" || order_status == "cancelado" || order_status == "analise" || order_status == "expirado"))
       response = {"chats": [], "current_page": 1, "total_pages": 1}
     else
       response = { chats: chats.map { |chat| ChatSerializer.new(chat) }, current_page: chats.current_page, total_pages: total }
@@ -232,6 +232,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
      .where.not(order_status: :finalizado)
      .where.not(order_status: :cancelado)
      .where.not(order_status: :analise)
+     .where.not(order_status: :expirado)
      .where.not(professional: nil)
      .order(created_at: :desc).page(page)
     
@@ -343,7 +344,8 @@ class Api::V2::ChatsController < Api::V2::ApiController
        orders = Order.joins("LEFT JOIN chats on (orders.id = order_id)")
        .where("sender_id = ? OR receiver_id = ?",session_user_id, session_user_id)
        .where("chats.for_admin = ?", for_admin)
-       .where.not(order_status: :analise)
+       .where.not(order_status: :analise) #Ver se precisa dos dois .where.not.
+       .where.not(order_status: :expirado)
        .distinct
        .order(created_at: :desc).page(page)
 
@@ -409,6 +411,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
        orders = Order.joins("LEFT JOIN chats on (orders.id = order_id)")
        .where("chats.for_admin = ?",for_admin)
        .where.not(order_status: :analise)
+       .where.not(order_status: :expirado)
        .distinct
        .order(created_at: :desc).page(page)
 
@@ -511,6 +514,8 @@ class Api::V2::ChatsController < Api::V2::ApiController
     end
 
     order = Order.find_by(id: chat_params[:order_id])
+    render json: order.budget
+    return
 
     if order == nil
       render json: {"error": "Error: Order could not be found."}

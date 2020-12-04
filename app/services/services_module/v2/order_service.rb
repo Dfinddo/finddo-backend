@@ -235,6 +235,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
             app_id: ENV['ONE_SIGNAL_APP_ID'], 
             include_player_ids: devices,
             data: {pagamento: 'aceito'},
+            #mudar pra recebido ou efetuado se for profissional ou usuario
             contents: {en: "Pagamento recebido\nObrigado por usar o Finddo!"} })
       end
     elsif params[:event] == "PAYMENT.CANCELLED"
@@ -456,5 +457,8 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
   def image_io(image)
     decoded_image = Base64.decode64(image[:base64])
     { io: StringIO.new(decoded_image), filename: image[:file_name] }
+  end
+
+  def pedido_expirado(order_id)
   end
 end

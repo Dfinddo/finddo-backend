@@ -5,7 +5,7 @@ class Api::V2::NotificationController < Api::V2::ApiController
     #POST notification/send_notification
     def send_notification_with_user_id
         user_id = notification_params[:user_id].to_i
-        data = {teste: "teste"}
+        #data = {teste: "teste"} VER COMO PEGAR O DATA COMO JSON POR BODY PARAMS
         content = notification_params[:content]
 
         try = @notification_service.send_notification_with_user_id(user_id, data, content)
