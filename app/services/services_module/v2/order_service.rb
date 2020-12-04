@@ -459,6 +459,48 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     { io: StringIO.new(decoded_image), filename: image[:file_name] }
   end
 
-  def pedido_expirado(order_id)
+  def expired_orders
+    #Roda toda meia noite
+    order_start_day = nil
+    user = nil
+    user_id = nil
+    user_name = nil
+    content = nil
+    content = nil
+
+    current_day = DateTime.now.strftime("%d").to_i
+    data = {pedido: "Expirou"}
+    flag = 1
+
+    orders = Order.where(order_status: :analise)
+    if orders == nil
+      return
+    end
+
+    for order in orders
+
+      order_start_day = order.start_order.strftime("%d").to_i
+
+      user = order.user
+      user_id = user.id
+      user_name = user.name
+
+      if current_day >= order_start_day
+        order.order_status = :expirado
+        
+        if !order.save
+          flag = -1
+
+        else
+          content = "Olá %s, infelizmente nenhum profissional pode atender o seu pedido. Por favor, tente novamente. Obrigado por utilizar a Finddo !"%user_name
+          @notification_service.send_notification_with_user_id(user_id, data, content)
+        end
+
+      end
+
+    end
+
+    return flag
   end
+  
 end
