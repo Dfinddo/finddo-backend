@@ -726,7 +726,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
   
   private
     def set_chat
-      @chat = Chat.find(params[:id])
+      @chat = Chat.find_by(id: params[:id])
     end
 
     def chat_params

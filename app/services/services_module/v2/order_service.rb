@@ -187,18 +187,6 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
           @notification_service.send_notification(devices, data, content)
         end
 
-        if order.user_rate > 0
-          order_user = order.user
-          order_user.rate = Order.where(user: order.user).average(:user_rate)
-          order_user.save!
-        end
-
-        if order.rate > 0
-          professional_user = order.professional_order
-          professional_user.rate = Order.where(professional_order: professional_user).average(:rate)
-          professional_user.save!
-        end
-
         order
       else
         raise ServicesModule::V2::ExceptionsModule::OrderException(order.errors)
@@ -501,6 +489,51 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     end
 
     return flag
+  end
+
+  def order_rate(order, params)
+    user = order.user
+    professional = order.professional_order
+
+    new_user_rate = params[:user_rate].to_f
+    new_professional_rate = params[:professional_rate].to_f
+
+    if new_user_rate == nil
+      new_user_rate = 0
+    end
+
+    if new_professional_rate == nil
+      new_professional_rate = 0
+    end
+
+    order.user_rate = new_user_rate
+    order.rate = new_professional_rate
+
+    order.order_status = :finalizado
+    if !order.save
+      return {"error:": "Error: order not saved."}
+    end
+
+    if new_user_rate > 0
+      user.rate = Order.where(user: user)
+      .where("user_rate > 0")
+      .average(:user_rate)
+      if !user.save
+        return {"error:": "Error: user not saved."}
+      end
+    end
+
+    if new_professional_rate > 0
+      professional.rate = Order.where(professional_order: professional)
+      .where("rate > 0")
+      .average(:rate)
+      if !professional.save
+        return {"error:": "Error: professional not saved."}
+      end
+    end
+    
+    return {"user_rate": user.rate, "professional_rate": professional.rate, "order.user_rate": order.user_rate, "order.professional_rate": order.rate}
+    
   end
   
 end

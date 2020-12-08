@@ -84,6 +84,7 @@ Rails.application.routes.draw do
       put 'orders/:id/reschedulings/:accepted', to: 'orders#update_rescheduling'
       put 'orders/direct_associate_professional/:id/:professional_id', to: 'orders#direct_associate_professional'
       get 'expired', to:  'orders#expired_order'
+      put '/orders/rate/:id', to: 'orders#order_rate'
     
       # Adresses
       get '/addresses/user/:user_id', to: 'addresses#get_by_user'

@@ -4,7 +4,7 @@ class Api::V2::OrdersController < Api::V2::ApiController
   before_action :set_order, only: [:show, :update, :destroy, 
     :associate_professional, :propose_budget, :budget_approve, :create_order_wirecard,
     :create_payment, :cancel_order, :disassociate_professional, :create_rescheduling,
-    :update_rescheduling, :direct_associate_professional]
+    :update_rescheduling, :direct_associate_professional, :order_rate]
 
   # GET api/v2/orders/:id
   def show
@@ -88,6 +88,11 @@ class Api::V2::OrdersController < Api::V2::ApiController
     else
       render json: create_state[:errors], status: :bad_request
     end
+  end
+
+  # PUT /orders/rate/?id&user_rate&professional_rate
+  def order_rate
+    render json: @order_service.order_rate(@order, params)
   end
 
   # PATCH/PUT /orders/1
@@ -195,7 +200,6 @@ class Api::V2::OrdersController < Api::V2::ApiController
 
     def set_order
       @order = @order_service.find_order(params[:id])
-
       if @order.nil?
         render json: { error: 'Pedido não encontrado' }, status: :not_found
         return
