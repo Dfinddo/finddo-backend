@@ -16,17 +16,17 @@ class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
 
     user = User.find_by(email: params[:email])
     if user
-      { error: 'Já existe um usuário com esse email.' }
+      {is_valid: false, error: 'Já existe um usuário com esse email.'}
     else
       user = User.find_by(cellphone: params[:cellphone])
       if user
-        { error: 'Já existe um usuário com esse telefone.' }
+        {is_valid: false, error: 'Já existe um usuário com esse telefone.'}
       else
         user = User.find_by(cpf: params[:cpf])
         if user
-          { error: 'Já existe um usuário com esse cpf.' }
+          {is_valid: false, error: 'Já existe um usuário com esse cpf.'}
         else
-          nil
+          {is_valid: true, error: nil}
         end
       end
     end
