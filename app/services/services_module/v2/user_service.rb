@@ -38,6 +38,10 @@ class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
       @user.activated = true if @user.user_type == "user"
 
       if @user.save
+        if address_params[:name] == nil
+          address_params[:name] = "Principal"
+        end
+
         address = @user.addresses.build(address_params)
         
         @address_service.set_selected_address(@user, address)

@@ -733,27 +733,6 @@ class Api::V2::ChatsController < Api::V2::ApiController
       params.require(:chat).permit(:message, :is_read, :sender_id, :receiver_id, :created_at, :updated_at, :order_id, :for_admin)
     end
 
-    def check_user_type
-      type = session_user.user_type
-      if type == "user"
-        return 1
-      elsif type == "professional"
-        return 2
-      elsif type == "admin"
-        return 3
-      end
-
-      return -1
-    end
-        
-    def check_admin
-      if (session_user.user_type == "admin")
-        return 200
-      end
-      
-      return 400
-    end
-
     def set_user_services
       @user_services = ServicesModule::V2::UserService.new
     end

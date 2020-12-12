@@ -48,5 +48,27 @@ module Api::V2
       render(json: { error: "Unauthorized access, please log in." }, 
         status: :unauthorized) unless logged_in?
     end
+
+    def check_user_type
+      type = session_user.user_type
+      if type == "user"
+        return 1
+      elsif type == "professional"
+        return 2
+      elsif type == "admin"
+        return 3
+      end
+
+      return -1
+    end
+        
+    def check_admin
+      if (session_user.user_type == "admin")
+        return 200
+      end
+      
+      return 400
+    end
+    
   end
 end

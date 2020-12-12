@@ -20,11 +20,6 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
 
     @order = Order.new(order_params)
 
-    #Verificar com o Perrut
-    #if @order.previous_budget
-     # @order.order_status = :agendando_visita
-    #end
-
     Order.transaction do
       if(order_params[:address_id] == nil)
         @address = Address.new(address_params)
@@ -164,11 +159,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
 
     Order.transaction do
       if order.update(order_params)
-        #devices = []
-        #order.user.player_ids.each do |el|
-        #  devices << el
-        #end
-
+  
         status_novo = ""
         if order.order_status == "agendando_visita"
           status_novo = "Agendando visita"
@@ -223,6 +214,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
             app_id: ENV['ONE_SIGNAL_APP_ID'], 
             include_player_ids: devices,
             data: {pagamento: 'aceito'},
+            
             #mudar pra recebido ou efetuado se for profissional ou usuario
             contents: {en: "Pagamento recebido\nObrigado por usar o Finddo!"} })
       end
