@@ -21,7 +21,6 @@ class Api::V2::ChatsController < Api::V2::ApiController
      elsif page < 0
       render json: {"error": "Error: page is lesser then 1."}
       return 400
-
     end
 
      chats = Chat.all
@@ -499,10 +498,9 @@ class Api::V2::ChatsController < Api::V2::ApiController
   
   #POST /chats
   def create
+
     chat = Chat.new(chat_params)
-
     sender = session_user
-
     receiver = User.find_by(id: chat_params[:receiver_id])
 
     order = nil
@@ -514,9 +512,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
     end
 
     order = Order.find_by(id: chat_params[:order_id])
-    render json: order.budget
-    return
-
+    
     if order == nil
       render json: {"error": "Error: Order could not be found."}
       return 400
@@ -535,16 +531,17 @@ class Api::V2::ChatsController < Api::V2::ApiController
     end
 
     chat.sender_id = sender_id
+    chat.for_admin = 0
 
     if chat.save
       render json: chat, status: :created
-    else
-
-      #Ver como ele pode cair aqui
-      render json: chat.errors, status: :unprocessable_entity
+      return 200
     end
-  
-    return 200
+
+    #Ver como ele pode cair aqui
+    render json: chat.errors, status: :unprocessable_entity
+
+    return 400
   end
   
   #POST /chats/admin
@@ -571,7 +568,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
       return 400
     end
 
-    if sender_user_type != 3 && receiver_user_type != 3
+    if sender_user_type != 3 && receiver_user_type != "admin"
       render json: {"error": "Error: Admin is neither sender or receiver."}
       return 400
     end
