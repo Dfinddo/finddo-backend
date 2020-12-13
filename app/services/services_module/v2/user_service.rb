@@ -1,4 +1,5 @@
 class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
+  require "cpf_cnpj"
 
   def initialize
     @payment_gateway_service = ServicesModule::V2::PaymentGatewayService.new
@@ -14,21 +15,33 @@ class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
       raise ServicesModule::V2::ExceptionsModule::NoParamsException.new
     end
 
+    cpf = params[:cpf]
     user = User.find_by(email: params[:email])
     if user
-      {is_valid: false, error: 'Já existe um usuário com esse email.'}
+      return {is_valid: false, error: 'Já existe um usuário com esse email.', code: 420}
+
     else
       user = User.find_by(cellphone: params[:cellphone])
+
       if user
-        {is_valid: false, error: 'Já existe um usuário com esse telefone.'}
+        return {is_valid: false, error: 'Já existe um usuário com esse telefone.', code: 420}
+
       else
-        user = User.find_by(cpf: params[:cpf])
+        user = User.find_by(cpf: cpf)
+
         if user
-          {is_valid: false, error: 'Já existe um usuário com esse cpf.'}
+          return {is_valid: false, error: 'Já existe um usuário com esse cpf.', code: 420}
+
+        elsif !CPF.valid?(cpf)
+          return {is_valid: false, error: 'CPF inválido.', code: 422}
+
         else
-          {is_valid: true, error: nil}
+          return {is_valid: true, error: nil, code: 200}
+
         end
+
       end
+
     end
   end
 
