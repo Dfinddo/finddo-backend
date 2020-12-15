@@ -18,12 +18,9 @@ class Api::V2::UsersController < Api::V2::ApiController
     if user_data_invalid.nil?
       head :ok
     else
-
-      code = user_data_invalid[:code]
-      
-      render json: user_data_invalid, status: code
-      return code
+      render json: user_data_invalid, status: :forbidden
     end
+    
   end
 
   def create

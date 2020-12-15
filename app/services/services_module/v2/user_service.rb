@@ -18,25 +18,25 @@ class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
     cpf = params[:cpf]
     user = User.find_by(email: params[:email])
     if user
-      return {is_valid: false, error: 'Já existe um usuário com esse email.', code: 420}
+      return {error: 'Já existe um usuário com esse email.'}
 
     else
       user = User.find_by(cellphone: params[:cellphone])
 
       if user
-        return {is_valid: false, error: 'Já existe um usuário com esse telefone.', code: 420}
+        return {error: 'Já existe um usuário com esse telefone.'}
 
       else
         user = User.find_by(cpf: cpf)
 
         if user
-          return {is_valid: false, error: 'Já existe um usuário com esse cpf.', code: 420}
+          return {error: 'Já existe um usuário com esse cpf.'}
 
         elsif !CPF.valid?(cpf)
-          return {is_valid: false, error: 'CPF inválido.', code: 422}
+          return {error: 'CPF inválido.'}
 
         else
-          return {is_valid: true, error: nil, code: 200}
+          return nil
 
         end
 
