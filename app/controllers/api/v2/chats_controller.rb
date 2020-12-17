@@ -502,6 +502,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
     chat = Chat.new(chat_params)
     sender = session_user
     receiver = User.find_by(id: chat_params[:receiver_id])
+    for_admin = chat_params[:for_admin]
 
     order = nil
     sender_id = nil
@@ -531,7 +532,10 @@ class Api::V2::ChatsController < Api::V2::ApiController
     end
 
     chat.sender_id = sender_id
-    chat.for_admin = 0
+    
+    if for_admin == nil
+      chat.for_admin = 0
+    end
 
     if chat.save
       render json: chat, status: :created
