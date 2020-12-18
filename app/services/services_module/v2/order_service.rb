@@ -286,8 +286,8 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     budget.order = order
     
     values = @payment_gateway_service.calculate_service_value(params[:budget])
-    budget.total_value = [:value_with_tax].to_i + params[:material_value].to_i
-    
+    budget.total_value = values[:value_with_tax].to_i + params[:material_value].to_i
+
     budget.save
 
     payload[:budget] = BudgetSerializer.new budget
