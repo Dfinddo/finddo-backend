@@ -289,9 +289,9 @@ class ServicesModule::V2::PaymentGatewayService < ServicesModule::V2::BaseServic
   def calculate_service_value(value)
     value_with_tax = 0
 
-    if value < 80
+    if value < 8000
       value_with_tax = value * 1.25
-    elsif value < 500
+    elsif value < 50000
       value_with_tax = value * 1.2
     else
       value_with_tax = value * 1.15
