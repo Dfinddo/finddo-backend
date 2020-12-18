@@ -244,7 +244,7 @@ class Api::V2::OrdersController < Api::V2::ApiController
     end
 
     def budget_params
-      params.permit(:budget, :is_previous, :material_value)
+      params.permit(:budget, :is_previous, :material_value, :accepted)
     end
 
     def image_io(image)
