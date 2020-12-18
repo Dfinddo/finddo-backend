@@ -272,8 +272,8 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
           include_player_ids: devices,
           data: payload,
           contents: { en: "O orçamento para o pedido foi recusado." } })
-      order.budget.destroy
-      order.reload
+      #order.budget.destroy
+      #order.reload
       order
     end
   end
