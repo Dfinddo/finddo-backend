@@ -272,8 +272,8 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
           include_player_ids: devices,
           data: payload,
           contents: { en: "O orçamento para o pedido foi recusado." } })
-      #order.budget.destroy
-      #order.reload
+      order.budget.destroy
+      order.reload
       order
     end
   end
@@ -284,10 +284,8 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     
     budget = Budget.new(params)
     budget.order = order
-    
-    values = @payment_gateway_service.calculate_service_value(params[:budget])
-    budget.total_value = values[:value_with_tax].to_i + params[:material_value].to_i
-
+    budget.attributes = @payment_gateway_service.calculate_service_value(params[:budget])
+    budget.total_value = budget.value_with_tax + budget.material_value
     budget.save
 
     payload[:budget] = BudgetSerializer.new budget
