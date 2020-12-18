@@ -121,6 +121,8 @@ class Api::V2::OrdersController < Api::V2::ApiController
 
   def propose_budget
     begin
+      render json: budget_params
+      return
       payload = @order_service.propose_budget(@order, budget_params)
       render json: payload, status: :ok
     rescue ServicesModule::V2::ExceptionsModule::WebApplicationException => e
