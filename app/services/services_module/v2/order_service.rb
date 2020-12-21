@@ -264,6 +264,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
             contents: { en: "O orçamento para o pedido foi aprovado." } })
       
       order.budget.update(accepted: true)
+      order.update(order_status: :agendando_visita)
       payload
     elsif order.budget.update(accepted: false)
       req = HTTParty.post("https://onesignal.com/api/v1/notifications", 
@@ -272,8 +273,6 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
           include_player_ids: devices,
           data: payload,
           contents: { en: "O orçamento para o pedido foi recusado." } })
-      #order.budget.destroy
-      #order.reload
       order
     end
   end
