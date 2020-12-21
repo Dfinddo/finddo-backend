@@ -27,6 +27,5 @@ class Order < ApplicationRecord
   enum urgency: [:urgent, :delayable]
 
   validates :price, numericality:  { greater_than_or_equal_to: 0 }
-  validate  :previous_budget_value_if_previous_budget
 
 end
