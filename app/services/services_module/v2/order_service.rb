@@ -445,7 +445,6 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     user_id = nil
     user_name = nil
     content = nil
-    content = nil
 
     current_day = DateTime.now.strftime("%d").to_i
     data = {pedido: "Expirou"}
