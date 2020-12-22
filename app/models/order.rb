@@ -28,8 +28,4 @@ class Order < ApplicationRecord
 
   validates :price, numericality:  { greater_than_or_equal_to: 0 }
 
-  def self.test
-    puts "Testando"
-  end
-
 end
