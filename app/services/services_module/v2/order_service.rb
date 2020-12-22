@@ -1,5 +1,5 @@
 class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
-
+  
   def initialize
     @notification_service = ServicesModule::V2::NotificationService.new
     @payment_gateway_service = ServicesModule::V2::PaymentGatewayService.new
