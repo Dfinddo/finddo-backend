@@ -25,8 +25,9 @@ class Api::V2::OrdersController < Api::V2::ApiController
   end
 
   def expired_orders
-    @order_service.expired_orders
-    return
+    code = @order_service.expired_orders
+    render json: code
+    return 200
   end
   
   #PUT /orders/problem_solved

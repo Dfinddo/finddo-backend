@@ -440,34 +440,56 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
 
   def expired_orders
     #Roda toda meia noite
-    order_start_day = nil
+    current_date = nil
+    day = nil
+    data = nil
+    flag = nil
+    orders = nil
+    order = nil
+    order_start_date = nil
+    diff = nil
+    diff_int = nil
+    check = nil
     user = nil
     user_id = nil
     user_name = nil
     content = nil
+  
+    current_date = Time.now
+    day = 1.day
 
-    current_day = DateTime.now.strftime("%d").to_i
     data = {pedido: "Expirou"}
-    flag = 1
-
+    flag = 200
+  
     orders = Order.where(order_status: :analise)
-    if orders == nil
-      return
+    if orders == nil || orders.length  < 1
+      return 400
     end
 
     for order in orders
+      
+      order_start_date = order.start_order
+      diff = (current_date - order_start_date) / day
+      
+      diff_int = diff.to_i
+      check =  diff - diff_int
 
-      order_start_day = order.start_order.strftime("%d").to_i
-
+      #Independente da diferença de horas, caso o dia atual seja maior ou igual do que dia de inicio do pedido +7, esse pedido deverá ser considerado expirado.
+      if diff_int == 6 && check != 0.0
+        diff = diff.to_i + 1
+      else
+        diff = diff_int
+      end
+      
       user = order.user
       user_id = user.id
       user_name = user.name
 
-      if current_day >= order_start_day
+      if diff >= 7
         order.order_status = :expirado
         
         if !order.save
-          flag = -1
+          flag = 400
 
         else
           content = "Olá %s, infelizmente nenhum profissional pode atender o seu pedido. Por favor, tente novamente. Obrigado por utilizar a Finddo !"%user_name
