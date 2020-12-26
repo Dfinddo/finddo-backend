@@ -65,5 +65,8 @@ end
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
-# Para automação de tarefas através do cron.
-gem 'whenever', require: false
+# Para otimizar trabalhos em Background
+gem 'sidekiq'
+
+# Para automação de tarefas baseadas em tempo
+gem 'sidekiq-scheduler'

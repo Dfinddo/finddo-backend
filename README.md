@@ -29,7 +29,9 @@
   
 - Para rodar outros comandos rake
   - `docker-compose run --rm app bundle exec -comando a ser executado` 
-  
+
+- Criando um job
+  - `docker-compose run --rm app bundle exec rails generate job nome_do_job`
   
 OBS: Pode precisar de sudo
 
