@@ -15,6 +15,25 @@ services:
     ports:
       - "1026:1025" 
       - "1081:1080"
+  
+  redis:
+    image: 'redis:5-alpine'
+    command: redis-server
+    ports:
+      - '6379:6379'
+    volumes:
+      - .:/finddobackend
+      
+  sidekiq:
+    depends_on:
+      - 'postgres'
+      - 'redis'
+    build: .
+    command: bundle exec sidekiq
+    volumes:
+      - .:/finddobackend
+    env_file:
+    - '.env'
 
   app:
     depends_on:
