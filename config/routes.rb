@@ -1,6 +1,9 @@
 Rails.application.routes.draw do
   # A rota / nesta api não tem utilidade
   root to: proc { [403, {}, ["Forbidden"]] }
+  
+  require 'sidekiq/web'
+  mount Sidekiq::Web => '/sidekiq'
 
   # Users
   post 'users', to: 'users#create'

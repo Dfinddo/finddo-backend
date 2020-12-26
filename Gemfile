@@ -69,4 +69,4 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 gem 'sidekiq'
 
 # Para automação de tarefas baseadas em tempo
-gem 'sidekiq-scheduler'
+gem "sidekiq-cron", "~> 1.1"
