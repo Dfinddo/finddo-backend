@@ -264,6 +264,7 @@ DEPENDENCIES
   rack-cors (= 1.1.1)
   rails (= 6.0.3.2)
   rails-erd
+  redis (~> 4.0)
   sidekiq
   sidekiq-cron (~> 1.1)
   spring
