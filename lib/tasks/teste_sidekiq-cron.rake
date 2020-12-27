@@ -1,4 +1,4 @@
 desc "Testando sideqik cron"
 task :teste_sidekiq => :environment do
-  PrintaOiJob::perform
+  PrintaOiJob.perform_now
 end
