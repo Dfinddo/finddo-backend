@@ -32,9 +32,7 @@ services:
     command: bundle exec sidekiq
     volumes:
       - .:/finddobackend
-    env_file:
-    - '.env'
-
+      
   app:
     depends_on:
       - "postgres"
