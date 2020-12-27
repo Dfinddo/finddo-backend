@@ -1,4 +1,4 @@
-my_first_job:
+order_expired:
   cron: "*/5 * * * *"
   class: "OrderExpired"
   queue: default
