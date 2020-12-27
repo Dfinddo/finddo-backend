@@ -1,5 +1,5 @@
 my_first_job:
-  cron: "*/1 * * * *"
+  cron: "*/5 * * * *"
   class: "PrintaOiJob"
   queue: default
 

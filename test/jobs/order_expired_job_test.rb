@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class PrintaOiJobTest < ActiveJob::TestCase
+class OrderExpiredJobTest < ActiveJob::TestCase
   # test "the truth" do
   #   assert true
   # end
