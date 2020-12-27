@@ -1,4 +1,4 @@
-class PrintaOiJob < ApplicationJob
+class OrderExpired < ApplicationJob
   queue_as :default
 
   def perform(*args)
