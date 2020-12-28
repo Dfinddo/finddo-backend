@@ -24,6 +24,28 @@ class Api::V2::OrdersController < Api::V2::ApiController
     end
   end
 
+  def order_day_arrived
+    return_values = @order_service.order_day_arrived
+    number_of_fails = return_values[:number_of_fails]
+    code = return_values[:code]
+
+    if code == 200 && number_of_fails > 0
+      message = "Falharam %d notificações."%number_of_fails
+      render json: {"message": message, "failed_notifications_orders_id": return_values[:failed_notifications_orders_id]}
+      return 200
+    
+    elsif code == 400
+      message = "Houve uma falha para salvar um pedido."
+      render json: message
+      return 400
+
+    end
+
+    message = "Deu certo."
+    render json: message
+    return 200
+  end
+
   def expired_orders
     code = @order_service.expired_orders
     render json: code

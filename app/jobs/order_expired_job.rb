@@ -3,6 +3,6 @@ class OrderExpired < ApplicationJob
 
   def perform(*args)
     ServicesModule::V2::OrderService.new.expired_orders
-    puts "\n\n\n==== funcionou ! ====\n\n\n"
+    puts "\n\n\n==== order_expired funcionou ! ====\n\n\n"
   end
 end

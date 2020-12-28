@@ -89,6 +89,7 @@ Rails.application.routes.draw do
       put 'orders/direct_associate_professional/:id/:professional_id', to: 'orders#direct_associate_professional'
       get 'expired', to:  'orders#expired_orders'
       put '/orders/rate/:id', to: 'orders#order_rate'
+      get 'order_day_arrived', to: 'orders#order_day_arrived'
     
       # Adresses
       get '/addresses/user/:user_id', to: 'addresses#get_by_user'

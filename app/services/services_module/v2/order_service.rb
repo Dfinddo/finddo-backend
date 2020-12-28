@@ -171,13 +171,6 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
           status_novo = "Aguardando profissional"
         end
 
-        if status_novo != "" && order.order_status != old_status
-          devices = order.player_ids
-          data = { pedido: 'status' }
-          content = "#{order.category.name}\n#{status_novo}"
-          @notification_service.send_notification(devices, data, content)
-        end
-
         order
       else
         raise ServicesModule::V2::ExceptionsModule::OrderException(order.errors)
@@ -546,6 +539,68 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     
     return {"user_rate": user.rate, "professional_rate": professional.rate, "order.user_rate": order.user_rate, "order.professional_rate": order.rate}
     
+  end
+
+  def order_day_arrived
+    user = nil
+    professional = nil
+    user_name = nil
+    professional_name = nil
+    user_id = nil
+    professional_id = nil
+    content1 = nil
+    content2 = nil
+    try = nil
+    failed_notifications_orders_id = []
+
+    number_of_fails = 0
+    
+    data = {pedido: "Chegou o dia"}
+
+    current_date_start = Time.now
+    current_date_end = current_date_start + 1.day
+
+    current_date_start = current_date_start.strftime("%Y-%m-%d")
+    current_date_end = current_date_end.strftime("%Y-%m-%d")
+
+    orders = Order.where("start_order >= ?", current_date_start)
+    .where("start_order < ?", current_date_end)
+    .where(order_status: :a_caminho) #ver status correto
+
+    for order in orders
+      user = order.user
+      professional = order.professional_order
+      
+      user_name = user.name
+      professional_name = professional.name
+
+      user_id = user.id
+      professional_id = professional.id
+
+      order.order_status = :aguardando_profissional
+
+      if order.save
+        content1 = "Olá %s. Gostariamos de te lembrar que chegou o dia de atendimento de um dos serviços que você requisitou. Atenciosamente, Equipe Finddo."%user_name
+        try = @notification_service.send_notification_with_user_id(user_id, data, content1)
+
+        content2 = "Olá %s. Gostariamos de te lembrar que chegou o dia de atendimento de um dos serviços que você aceitou. Atenciosamente, Equipe Finddo."%professional_name
+        try = @notification_service.send_notification_with_user_id(professional_id, data, content2)
+
+        if try == 401
+          number_of_fails = number_of_fails + 1
+          #Colocar isso num log para V3
+          puts "====\n\n\n %s\n\n\n ===="%order.id
+          failed_notifications_orders_id << order.id
+        end
+
+      else
+        #Não salvou fazer tratamento de erro
+        return {"code": 400, "number_of_fails": number_of_fails, "failed_notifications_orders_id": failed_notifications_orders_id}
+      end
+
+    end
+    
+    return {"code": 200, "number_of_fails": number_of_fails, "failed_notifications_orders_id": failed_notifications_orders_id}
   end
   
 end
