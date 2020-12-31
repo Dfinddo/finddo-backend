@@ -27,7 +27,7 @@ class Api::V2::UsersController < Api::V2::ApiController
     begin
       @user = @user_service.create_user(user_params, address_params, params)
       if @user = 400
-        render json: {"error": "Error: invalid CPF."}
+        render json: {"error": "Error: invalid CPF."}, status: 400
         return 400
       end
       render json: SerializersModule::V2::UserSerializer.new(@user).serializable_hash, status: :created
