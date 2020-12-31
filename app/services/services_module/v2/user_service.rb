@@ -46,13 +46,6 @@ class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
   end
 
   def create_user(user_params, address_params, params)
-    cpf = user_params[:cpf]
-    
-    if !CPF.valid?(cpf)
-      puts "\n\n\n=== CPF INVÁLUDO ===\n\n\n"
-      return 400
-    end
-      
     User.transaction do
       @user = User.new(user_params)
       @user.activated = true if @user.user_type == "user"
