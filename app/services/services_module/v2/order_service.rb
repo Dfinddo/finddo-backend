@@ -565,7 +565,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
 
     orders = Order.where("start_order >= ?", current_date_start)
     .where("start_order < ?", current_date_end)
-    .where(order_status: :a_caminho) #ver status correto
+    .where(order_status: :agendando_visita) #ver status correto
 
     for order in orders
       user = order.user
@@ -601,6 +601,10 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     end
     
     return {"code": 200, "number_of_fails": number_of_fails, "failed_notifications_orders_id": failed_notifications_orders_id}
+  end
+
+  def professional_arrived_at_service_address
+    
   end
   
 end
