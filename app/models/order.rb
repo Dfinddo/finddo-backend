@@ -22,7 +22,7 @@ class Order < ApplicationRecord
     :em_servico, :finalizado, 
     :cancelado, :processando_pagamento, 
     :recusado, :orcamento_previo,
-    :aguardando_profissional, :agendando_visita, :expirado]
+    :aguardando_profissional, :agendando_visita, :expirado, :aguardando_dia_servico]
 
   enum urgency: [:urgent, :delayable]
 

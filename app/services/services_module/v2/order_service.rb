@@ -541,6 +541,58 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     
   end
 
+  def one_day_earlier_then_order_day
+    current_date_start = Time.now + 1.day
+    current_date_end = current_date_start + 2.day
+
+    current_date_start = current_date_start.strftime("%Y-%m-%d")
+    current_date_end = current_date_end.strftime("%Y-%m-%d")
+
+    data = {pedido: "Falta um dia"}
+
+    orders = Order.where("start_order >= ?", current_date_start)
+    .where("start_order < ?", current_date_end)
+    .where(order_status: :agendando_visita)
+
+    for order in orders
+      user = order.user
+      professinal = order.professional
+
+      user_name = user.name
+      professional_name = professional.name
+
+      user_id = user.id
+      professional_id = professional.id
+
+      address = order.address
+      street = address.street
+      number = address.number
+
+      full_address = street + ' número ' + number
+      district = address.district
+
+      order_day = order.start_order
+      order_day = order_day.strftime("%Y-%m-%d")
+
+      order.order_status = :aguardando_dia_servico
+
+      if order.save
+        content = "Olá %s, gostariamos de te lembrar que você está agendado para atender um pedido no endereço: %s no bairro: %s amanhã. Atenciosamente.: Equipe Finddo." % [professional_name, full_address, district]
+        try = @notification_service.send_notification_with_user_id(professional_id, data, content)
+
+        if try == 401
+          #Colocar isso num log para V3
+          puts "====\n\n\nProfissional do pedido de id %s não recebeu notificação.\n\n\n ===="%order.id
+        end
+
+      else
+        puts "====\n\n\nMudança de status não foi feita para o pedido de id %s.\n\n\n ===="%order.id
+      end
+
+    end
+
+  end
+
   def order_day_arrived
     user = nil
     professional = nil
@@ -565,7 +617,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
 
     orders = Order.where("start_order >= ?", current_date_start)
     .where("start_order < ?", current_date_end)
-    .where(order_status: :agendando_visita) #ver status correto
+    .where(order_status: :aguardando_dia_servico)
 
     for order in orders
       user = order.user
@@ -604,7 +656,47 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
   end
 
   def professional_arrived_at_service_address
+    orders = Order.where(order_status: :aguardando_profissional)
     
+    data = {pedido: "Chegou a hora"}
+
+    for order in orders
+      user = order.user
+      professional = order.professional_order
+
+      user_id = user.id
+      professional_id = professional.id
+
+      user_name = user.name
+      professional_name = professional.name
+
+      address = order.address
+      street = address.street
+      number = address.number
+
+      full_address = street + ' número ' + number
+      district = address.district
+
+      content_cliente = "Olá %s, gostariamos de saber se o profissional %s já se encontra em sua residência. Por favor, confirme caso ele se encontre." % [professional_name, user_name]
+      content_professional = "Olá %s, gostariamos de te lembrar que chegou o horário de atender o pedido no endereço: %s no bairro: %s." % [professional_name, full_address, district]
+
+      current_date = Time.now
+      current_time = current_date.strftime("%H:%M:%S")
+
+      order_time_plus_15 = Time.parse(order.hora_inicio) + 15.minute
+      order_time_plus_15 = order_time_plus_15.strftime("%H:%M:%S")
+
+      if current_time >= order_time_plus_15
+        order.order_status = :a_caminho
+
+        if order.save
+          @notification_service.send_notification_with_user_id(user_id, data, content_cliente)
+          @notification_service.send_notification_with_user_id(professional_id, data, content_professional)
+        end
+        
+      end
+      
+    end
   end
   
 end
