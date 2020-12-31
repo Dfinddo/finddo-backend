@@ -49,6 +49,7 @@ class ServicesModule::V2::UserService < ServicesModule::V2::BaseService
     cpf = user_params[:cpf]
     
     if !CPF.valid?(cpf)
+      puts "\n\n\n=== CPF INVÁLUDO ===\n\n\n"
       return 400
     end
       
