@@ -32,6 +32,9 @@
 
 - Criando um job
   - `docker-compose run --rm app bundle exec rails generate job nome_do_job`
+
+- Criando um rake task
+  - `docker-compose run --rm app bundle exec rails g task meu_namespace meu_task`
   
 OBS: Pode precisar de sudo
 
