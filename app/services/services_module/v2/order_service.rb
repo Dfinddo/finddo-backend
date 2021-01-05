@@ -704,7 +704,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     if order.order_status == "a_caminho"
       order.order_status = :em_servico
       if order.save
-        return 200
+        return order
       end
       return 401
     else

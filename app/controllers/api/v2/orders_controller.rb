@@ -195,8 +195,9 @@ class Api::V2::OrdersController < Api::V2::ApiController
 
   def change_to_em_servico
     check = @order_service.change_to_em_servico(params[:id])
-    if check == 200
-      render json: "Status changed."
+    if !check.respond_to?(:to_i)
+      render json: check
+      return 200
     elsif check == 400
       render json: "Order wasn't at a_caminho status."
     elsif check == 401
