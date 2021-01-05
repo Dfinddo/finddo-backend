@@ -698,5 +698,18 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
       
     end
   end
+
+  def change_to_em_servico (order_id)
+    order = Order.find_by(id: order_id.to_i)
+    if order.order_status == "a_caminho"
+      order.order_status = :em_servico
+      if order.save
+        return 200
+      end
+      return 401
+    else
+      return 400
+    end
+  end
   
 end

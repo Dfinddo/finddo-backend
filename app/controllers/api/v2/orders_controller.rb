@@ -4,7 +4,7 @@ class Api::V2::OrdersController < Api::V2::ApiController
   before_action :set_order, only: [:show, :update, :destroy, 
     :associate_professional, :propose_budget, :budget_approve, :create_order_wirecard,
     :create_payment, :cancel_order, :disassociate_professional, :create_rescheduling,
-    :update_rescheduling, :direct_associate_professional, :order_rate]
+    :update_rescheduling, :direct_associate_professional, :order_rate, :change_to_em_servico]
 
   # GET api/v2/orders/:id
   def show
@@ -191,6 +191,19 @@ class Api::V2::OrdersController < Api::V2::ApiController
     @order.reload
 
     render json: @order
+  end
+
+  def change_to_em_servico
+    check = @order_service.change_to_em_servico(params[:id])
+    if check == 200
+      render json: "Status changed."
+    elsif check == 400
+      render json: "Order wasn't at a_caminho status."
+    elsif check == 401
+      render json: "Order not saved."
+    end
+
+    return check
   end
 
   private

@@ -68,6 +68,7 @@ Rails.application.routes.draw do
       get 'users/set_player_id', to: 'users#set_player_id'
 
       # Orders
+      get 'orders/em_servico/:id', to: 'orders#change_to_em_servico'
       put '/orders/disassociate/:id', to: 'orders#disassociate_professional'
       put 'orders/cancel/:id', to: 'orders#cancel_order'
       post 'orders/budget_approve', to: 'orders#budget_approve'
