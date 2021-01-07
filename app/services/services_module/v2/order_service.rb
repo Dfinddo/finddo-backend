@@ -186,12 +186,12 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     order_id = params[:resource][:payment][:_links][:order][:title];
     if params[:event] == "PAYMENT.IN_ANALYSIS"
       order = Order.find_by(order_wirecard_id: order_id)
-      order.order_status = :processando_pagamento if order.order_status != "finalizado"
+      order.order_status = :processando_pagamento if order.order_status != "classificando"
       order.save
     elsif params[:event] == "PAYMENT.AUTHORIZED"
       order = Order.find_by(order_wirecard_id: order_id)
       order.paid = true
-      order.order_status = :finalizado
+      order.order_status = :classificando
 
       if order.save
         devices = []
@@ -497,43 +497,48 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
   end
 
   def order_rate(order, params)
+
+    if order.order_status != :classificando
+      return {"error": "Error: Order is not on adequate status."}
+    end
+
     user = order.user
     professional = order.professional_order
 
     new_user_rate = params[:user_rate].to_f
     new_professional_rate = params[:professional_rate].to_f
 
-    if new_user_rate == nil
-      new_user_rate = 0
+    if new_user_rate != nil
+      order.user_rate = new_user_rate
     end
 
-    if new_professional_rate == nil
-      new_professional_rate = 0
+    if new_professional_rate != nil
+      order.rate = new_professional_rate
     end
 
-    order.user_rate = new_user_rate
-    order.rate = new_professional_rate
+    if order.user_rate != nil && order.rate != nil
+      order.order_status = :finalizado
+    end
 
-    order.order_status = :finalizado
     if !order.save
-      return {"error:": "Error: order not saved."}
+      return {"error": "Error: order not saved."}
     end
 
-    if new_user_rate > 0
+    if new_user_rate != nil && new_user_rate > 0
       user.rate = Order.where(user: user)
       .where("user_rate > 0")
       .average(:user_rate)
       if !user.save
-        return {"error:": "Error: user not saved."}
+        return {"error": "Error: user not saved."}
       end
     end
 
-    if new_professional_rate > 0
+    if new_professional_rate != nil && new_professional_rate > 0
       professional.rate = Order.where(professional_order: professional)
       .where("rate > 0")
       .average(:rate)
       if !professional.save
-        return {"error:": "Error: professional not saved."}
+        return {"error": "Error: professional not saved."}
       end
     end
     
@@ -699,8 +704,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     end
   end
 
-  def change_to_em_servico (order_id)
-    order = Order.find_by(id: order_id.to_i)
+  def change_to_em_servico (order)
     if order.order_status == "a_caminho"
       order.order_status = :em_servico
       if order.save

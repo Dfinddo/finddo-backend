@@ -194,7 +194,7 @@ class Api::V2::OrdersController < Api::V2::ApiController
   end
 
   def change_to_em_servico
-    check = @order_service.change_to_em_servico(params[:id])
+    check = @order_service.change_to_em_servico(@order)
     if !check.respond_to?(:to_i)
       render json: check
       return 200
