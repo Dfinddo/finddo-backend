@@ -3,7 +3,7 @@ Rails.application.routes.draw do
   root to: proc { [403, {}, ["Forbidden"]] }
   
   require 'sidekiq/web'
-  require 'sidekiq/cron/web'
+  require 'sidekiq-scheduler/web'
   mount Sidekiq::Web => '/sidekiq'
   
   # Users

@@ -9,6 +9,8 @@ class Order < ApplicationRecord
   belongs_to :filtered_professional, :class_name => 'User', optional: true #para o filtro de profissionais.
   has_many :order_chat, :class_name => 'Chat' #chat que faz referencia a um servico
   belongs_to :address
+  
+  has_one :orders_queue
 
   # ordem dos passos sucedidos do pedido:
   # analise, orcamento_previo, agendando_visita,
