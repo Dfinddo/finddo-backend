@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_12_18_204014) do
+ActiveRecord::Schema.define(version: 2021_01_08_192320) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -127,10 +127,19 @@ ActiveRecord::Schema.define(version: 2020_12_18_204014) do
     t.bigint "previous_budget_value"
     t.bigint "filtered_professional_id"
     t.boolean "problem_solved", default: false, null: false
+    t.datetime "professional_arrived"
     t.index ["address_id"], name: "index_orders_on_address_id"
     t.index ["category_id"], name: "index_orders_on_category_id"
     t.index ["filtered_professional_id"], name: "index_orders_on_filtered_professional_id"
     t.index ["user_id"], name: "index_orders_on_user_id"
+  end
+
+  create_table "orders_queues", id: false, force: :cascade do |t|
+    t.bigint "order_id", null: false
+    t.integer "order_status", default: 0, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["order_id"], name: "index_orders_queues_on_order_id"
   end
 
   create_table "reschedulings", force: :cascade do |t|
@@ -228,6 +237,7 @@ ActiveRecord::Schema.define(version: 2020_12_18_204014) do
   add_foreign_key "orders", "users"
   add_foreign_key "orders", "users", column: "filtered_professional_id"
   add_foreign_key "orders", "users", column: "professional"
+  add_foreign_key "orders_queues", "orders"
   add_foreign_key "reschedulings", "orders"
   add_foreign_key "subcategories", "categories"
   add_foreign_key "user_profile_photos", "users"
