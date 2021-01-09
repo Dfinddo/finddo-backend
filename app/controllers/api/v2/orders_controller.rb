@@ -106,7 +106,7 @@ class Api::V2::OrdersController < Api::V2::ApiController
       create_state = @order_service.create_order(order_params, address_params, params)
     end
 
-    if create_state[:order]
+    if create_state[:order] != nil
       render json: create_state[:order], status: :created
     else
       render json: create_state[:errors], status: :bad_request

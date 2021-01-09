@@ -41,6 +41,13 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
         @order.end_order = @order.start_order + 7.days
       end
 
+      check = orders_queue_scheduler_interface(order_params)
+      
+      if check[:status] == 400
+        raise ActiveRecord::Rollback
+        return {order: nil, errors: check[:error] }
+      end
+
       if @order.save
         devices = []
         
@@ -704,7 +711,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     end
   end
 
-  def change_to_em_servico (order)
+  def change_to_em_servico(order)
     if order.order_status == "a_caminho"
       order.order_status = :em_servico
       if order.save
@@ -714,6 +721,17 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     else
       return 400
     end
+  end
+
+  def orders_queue_scheduler_interface(order)
+    orders_queue_params = [order_id: order.id, order_status: order.order_status]
+    orders_queue_entry = OrdersQueue.new(orders_queue_params)
+
+    if !orders_queue_entry.save
+      return {"error": "Fatal error: orders_queue_entry couldn't be created.", "status": 400}
+    end
+
+    EnqueueOrdersJob.new.perform({"order_id": order.id, "start_order": order.start_order})
   end
   
 end
