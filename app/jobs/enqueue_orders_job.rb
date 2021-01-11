@@ -1,7 +1,17 @@
 class EnqueueOrdersJob < ApplicationJob
   queue_as :default
-
+  
   def perform(*args)
-    #modifica o sidekiq.yml para incluir a funcao F2 para rodar no dia e hora recebidos como argumento
+    order_id = args[0][:order_id]
+    start_order = args[0][:start_order]
+    notification_type = "first call"
+    
+    job_name = 'final_flow_manager at: ' + start_order + ' for order with id: ' + order_id.to_s
+    
+    Sidekiq.set_schedule(job_name, { 'at' => [start_order], 'class' => 'FinalFlowManagerSchedulerJob', 'args' => [order_id.to_s, notification_type] } )
+    
+    #OBS: testar desativar um job com :dynamic: true.
   end
 end
+
+#Este job agenda um outro job que por sua vez agenda uma função na classe de serviço de orders.

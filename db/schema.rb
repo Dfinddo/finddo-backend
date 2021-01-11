@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_01_08_192320) do
+ActiveRecord::Schema.define(version: 2021_01_11_031849) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -136,7 +136,6 @@ ActiveRecord::Schema.define(version: 2021_01_08_192320) do
 
   create_table "orders_queues", id: false, force: :cascade do |t|
     t.bigint "order_id", null: false
-    t.integer "order_status", default: 0, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["order_id"], name: "index_orders_queues_on_order_id"

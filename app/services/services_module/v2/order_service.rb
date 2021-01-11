@@ -1,5 +1,5 @@
 class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
-  
+
   def initialize
     @notification_service = ServicesModule::V2::NotificationService.new
     @payment_gateway_service = ServicesModule::V2::PaymentGatewayService.new
@@ -20,6 +20,8 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
 
     @order = Order.new(order_params)
 
+    orders_queue_check = nil
+    transaction_check = nil
     Order.transaction do
       if(order_params[:address_id] == nil)
         @address = Address.new(address_params)
@@ -41,14 +43,15 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
         @order.end_order = @order.start_order + 7.days
       end
 
-      check = orders_queue_scheduler_interface(order_params)
-      
-      if check[:status] == 400
-        raise ActiveRecord::Rollback
-        return {order: nil, errors: check[:error] }
-      end
-
       if @order.save
+
+        orders_queue_check = orders_queue_scheduler_interface(@order)
+      
+        if orders_queue_check[:status] == 400
+          raise ActiveRecord::Rollback
+          transaction_check = -1
+        end
+
         devices = []
         
         User.where(user_type: :professional).each do |u|
@@ -69,9 +72,17 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
 
         { order: @order, errors: nil }
       else
-        { order: nil, errors: @order.errors }
+
+        if transaction_check == -1
+          return {order: nil, errors: orders_queue_check[:error] }
+        end
+
+        return { order: nil, errors: @order.errors }
+
       end
+
     end
+
   end
 
   def associate_professional(params, order)
@@ -349,6 +360,10 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
 
         @notification_service.send_notification(devices, {}, 
           content = "#{order.category.name} - Pedido cancelado")
+        
+        #Faz a manutenção no ciclo recursivo de final_flow_manager
+        orders_queue_changer(order.id, false)
+
         order
       else
         raise ServicesModule::V2::ExceptionsModule::WebApplicationException.new(
@@ -400,6 +415,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
   end
 
   def update_rescheduling(order, user, accepted)
+    order_id = order.id
     order.rescheduling.user_accepted = accepted if user == order.user
     order.rescheduling.professional_accepted = accepted if user == order.professional_order
 
@@ -415,6 +431,10 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
       elsif order.rescheduling.user_accepted == order.rescheduling.professional_accepted
         @notification_service.send_notification(devices, order.rescheduling, 
           content = "#{order.category.name} - reagendamento confirmado")
+        
+        #Faz a manutenção no ciclo recursivo de final_flow_manager
+        orders_queue_changer(order_id, true)
+        
         order
       else
         @notification_service.send_notification(devices, order.rescheduling, 
@@ -494,6 +514,10 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
         else
           content = "Olá %s, infelizmente nenhum profissional pode atender o seu pedido. Por favor, tente novamente. Obrigado por utilizar a Finddo !"%user_name
           @notification_service.send_notification_with_user_id(user_id, data, content)
+
+          #Faz a manutenção no ciclo recursivo de final_flow_manager
+          orders_queue_changer(order.id, false)
+          
         end
 
       end
@@ -712,26 +736,257 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
   end
 
   def change_to_em_servico(order)
+    order_id = order.id
+    
     if order.order_status == "a_caminho"
       order.order_status = :em_servico
+
       if order.save
+        #Para interromper o ciclo recursivo de final_flow_manager
+        orders_queue_recursion_manager(order_id)
+
         return order
       end
+
       return 401
+      
     else
       return 400
     end
+
   end
 
   def orders_queue_scheduler_interface(order)
-    orders_queue_params = [order_id: order.id, order_status: order.order_status]
+    orders_queue_params = {order_id: order.id}
     orders_queue_entry = OrdersQueue.new(orders_queue_params)
 
     if !orders_queue_entry.save
       return {"error": "Fatal error: orders_queue_entry couldn't be created.", "status": 400}
     end
 
-    EnqueueOrdersJob.new.perform({"order_id": order.id, "start_order": order.start_order})
+    start_order = order.start_order.strftime("%Y-%m-%d %H:%M:%S")
+
+    print "\n\n\n==== %s ====\n\n\n"%start_order
+    
+    EnqueueOrdersJob.new.perform({"order_id": order.id, "start_order": start_order})
+
+    return {"error": nil, "status": 200}
   end
-  
+
+  def final_flow_manager(order_id, notification_type)
+    data = {pedido: "Chegou a hora"}
+
+    transaction_check = nil
+    Order.transaction do
+
+      order = Order.find_by(id: order_id)
+      order_status = order.order_status
+      start_order = order.start_order
+      
+      if order_status != :aguardando_profissional
+        transaction_check = -1
+        puts "\n\n\n==== Error: Incorrect order_status. ====\n\n\n"""
+        raise ActiveRecord::Rollback
+      end
+
+      #Ver se precisa converter ambos para string antes de comparar
+      start_order = start_order.strftime("%Y-%m-%d %H:%M:%S")
+      
+      current_date = Time.now
+
+      #Ajustar essa variavel de acordo com as regras de negócio
+      current_date_one_more_day = current_date + 1.day
+      current_date = current_date.strftime("%Y-%m-%d %H:%M:%S")
+
+      orders_queue_counterpart = OrdersQueue.find_by(order_id: order_id)
+
+      if orders_queue_counterpart == nil
+        transaction_check = -2
+        raise ActiveRecord::Rollback
+        puts "\n\n\n==== Error: Order not found in OrdersQueues. ====\n\n\n"""
+      end
+
+      # Para notificação
+      user = order.user
+      professional = order.professional_order
+      user_id = user.id
+      professional_id = professional.id
+      user_name = user.name
+      professional_name = professional.name
+      address = order.address
+      street = address.street
+      number = address.number
+      full_address = street + ' número ' + number
+      district = address.district
+
+      if start_order >= current_date && start_order <= current_date_one_more_day
+        
+        #Manda notificação caso essa seja a primeira chamada dessa função em seu ciclo recursivo
+        if notification_type == "first call"
+      
+          order.status = :a_caminho
+
+          if order.save
+            content_cliente = "Olá %s, gostariamos de saber se o profissional %s já se encontra em sua residência. Por favor, confirme fazendo x coisa caso ele se encontre. Atenciosamente: Equipe Finddo." % [professional_name, user_name]
+            content_professional = "Olá %s, gostariamos de te lembrar que chegou o horário de atender o pedido no endereço: %s no bairro: %s. Atenciosamente: Equipe Finddo." % [professional_name, full_address, district]
+            
+            @notification_service.send_notification_with_user_id(user_id, data, content_cliente)
+            @notification_service.send_notification_with_user_id(professional_id, data, content_professional)
+            
+          else
+            transaction_check = -3
+            puts "\n\n\n==== Error: Order coudn't be saved. ====\n\n\n"""
+            raise ActiveRecord::Rollback
+          end
+
+        #Manda notificação apenas para o profissional caso essa função já tenha entrado em recursão
+        elsif notification_type == "next calls"
+          content_professional = "Olá %s, essa notificação será reenviada a cada 15 minutos até que seu cliente confirme a sua chegada no endereço: %s no bairro: %s. Atenciosamente: Equipe Finddo." % [professional_name, full_address, district]
+
+          @notification_service.send_notification_with_user_id(professional_id, data, content_professional)
+        end
+          
+      else
+        transaction_check = -4
+        puts "\n\n\n==== Error: Dates mismatch. ====\n\n\n"""
+        raise ActiveRecord::Rollback
+      end
+
+    end
+
+    #Retornando valores para o job FinalFlowManagerSchedulerJob para caso um dia queira-se implementar alguma funcionalidade em cima disso.
+    if transaction_check == -1
+      return -1
+    elsif transaction_check == -2
+      return -2
+    elsif transaction_check == -3
+      return -3
+    elsif transaction_check == -4
+      return -4
+    end
+    
+    order = Order.find_by(id: order_id)
+
+    #São feitas checagens imediatamente antes da chamada, e durante ela, para evitar conflitos de status ou chamadas de funcoes desnecessárias.
+    order_status = order.order_status
+
+    if order_status == :a_caminho || order_status == :em_servico
+      puts "\n\n\n==== orders_queue_recursion_manager called. ====\n\n\n"""
+
+      #Chamada de orders_queue_recursion_manager passando como argumento o id do pedido
+      orders_queue_recursion_manager(order_id)
+      return 1
+
+    else
+
+      #Caso aconteça uma mudança de status no meio da execução desta função
+      puts "\n\n\n==== Recursion finished. ====\n\n\n"""
+      
+      return 0
+    end
+
+  end
+
+  def orders_queue_recursion_manager(order_id)
+    order = Order.find_by(id: order_id)
+    order_status = order.order_status
+
+    #Retira as chamadas recursivas para final_flow_manager dele, e celeta o pedido correspondente em Orders_queue.
+    if order_status == :em_servico
+
+      order_id = order.id.to_s
+      job_name = 'final_flow_manager in 15 minutes for order with id: ' + order_id
+
+      Sidekiq.set_schedule(job_name, {'enabled' => false })
+      
+      OrdersQueue.find_by(id: order_id.to_i).destroy
+
+      puts "\n\n\n==== Recursion finished. ====\n\n\n"""
+      return 0
+
+    else
+      puts "\n\n\n==== Function scheduled. ====\n\n\n"""
+      CallFinalFlowManagerIn15MinutesJob.new.perform(order_id)
+      return 1
+    end
+
+  end
+
+  #Deve ser chamada caso ocorra alguma mudança significativa de status com algum pedido.
+  def orders_queue_changer(order_id, reschedule)
+    transaction_check = nil
+    OrdersQueue.transaction do
+
+      order = Order.find_by(id: order_id)
+
+      if order == nil
+        transaction_check = -1
+
+        if reschedule == false
+          call_method = 'Regular'
+        else
+          call_method = 'Rescheduling'
+        end
+        
+        puts "\n\n\n==== Error: Order not found (Called by %s method). ====\n\n\n"%call_method
+        raise ActiveRecord::Rollback
+      end
+
+      order_status = order.order_status
+
+      orders_queue_counterpart = OrdersQueue.find_by(order_id: order_id)
+
+      if orders_queue_counterpart == nil
+        transaction_check = -2
+        puts "\n\n\n==== Error: Order not found in OrdersQueues. ====\n\n\n"""
+        raise ActiveRecord::Rollback
+      end
+
+      start_order = order.start_order.strftime("%Y-%m-%d %H:%M:%S")
+
+      job_name_at_date = 'final_flow_manager at: ' + start_order + ' for order with id: ' + order_id.to_s
+      job_name_in_15 = 'final_flow_manager in 15 minutes for order with id: ' + order_id
+
+      #Desativa todos os possiveis jobs agendados para este serviço
+      Sidekiq.set_schedule(job_name_at_date, {'enabled' => false })
+      Sidekiq.set_schedule(job_name_in_15, {'enabled' => false })
+
+      if order_status == "cancelado" || order_status == "expirado"
+        OrdersQueue.find_by(id: order_id.to_i).destroy
+      end
+
+      #Caso o pedido esteja sendo re-agendado
+      if reschedule == true
+
+        new_start_order = order.rescheduling.date_order
+
+        if new_start_order == nil
+          transaction_check = -3
+          puts "\n\n\n==== Error: New order schedule couldn't be found at order.rescheduling. ====\n\n\n"""
+          raise ActiveRecord::Rollback
+        end
+        
+        #Re-agenda final_flow_manager para rodar na nova data reiniciando o ciclo
+        EnqueueOrdersJob.new.perform({"order_id": order_id, "start_order": new_start_order})
+        puts "\n\n\n==== final_flow_manager rescheduled. ====\n\n\n"
+        transaction_check = 1
+      end
+
+
+    end
+
+    if transaction_check == -1
+      return -1
+    elsif transaction_check == -2
+      return -2
+    elsif transaction_check == -3
+      return -3
+    elsif transaction_check == 1
+      return 1
+    end
+
+    return 0
+    
+  end
+
 end
