@@ -783,7 +783,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
       order_status = order.order_status
       start_order = order.start_order
       
-      if order_status != :aguardando_profissional
+      if order_status != :agendando_visita
         transaction_check = -1
         puts "\n\n\n==== Error: Incorrect order_status. ====\n\n\n"""
         raise ActiveRecord::Rollback
@@ -823,7 +823,8 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
         
         #Manda notificação caso essa seja a primeira chamada dessa função em seu ciclo recursivo
         if notification_type == "first call"
-      
+          
+          #Aqui poderia fazer uma lógica para colocar :aguardando_profissional, e apenas mudar para :a_caminho quando o profissional confirmar que está realmente a caminho.
           order.status = :a_caminho
 
           if order.save
