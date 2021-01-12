@@ -4,7 +4,7 @@ class Api::V2::OrdersController < Api::V2::ApiController
   before_action :set_order, only: [:show, :update, :destroy, 
     :associate_professional, :propose_budget, :budget_approve, :create_order_wirecard,
     :create_payment, :cancel_order, :disassociate_professional, :create_rescheduling,
-    :update_rescheduling, :direct_associate_professional, :order_rate, :change_to_em_servico]
+    :update_rescheduling, :direct_associate_professional, :order_rate, :change_to_em_servico, :request_cancelation]
 
   # GET api/v2/orders/:id
   def show
@@ -227,6 +227,12 @@ class Api::V2::OrdersController < Api::V2::ApiController
     end
 
     return check
+  end
+
+  def request_cancelation
+    check = @order_service.request_cancelation(@order)
+    render json: check
+    return check[:status]
   end
 
   private

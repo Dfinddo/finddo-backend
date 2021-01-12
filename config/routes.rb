@@ -91,6 +91,7 @@ Rails.application.routes.draw do
       get 'expired', to:  'orders#expired_orders'
       put '/orders/rate/:id', to: 'orders#order_rate'
       get 'order_day_arrived', to: 'orders#order_day_arrived'
+      get 'request_cancelation_of_order/:id', to: 'orders#request_cancelation'
     
       # Adresses
       get '/addresses/user/:user_id', to: 'addresses#get_by_user'

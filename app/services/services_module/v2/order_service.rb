@@ -990,4 +990,13 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     
   end
 
+  def request_cancelation(order)
+    order.order_status = :checando_cancelado
+    if !order.save
+      return {"error": "Error. Coudn't change order status", "status": 400}
+    else
+      return {"error": nil, "status": 200}
+    end
+  end
+
 end
