@@ -785,7 +785,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
       
       if order_status != :agendando_visita
         transaction_check = -1
-        puts "\n\n\n==== Error: Incorrect order_status. ====\n\n\n"""
+        puts "\n\n\n==== Error: Incorrect order_status. ====\n==== status: %s ====\n\n\n"""%order_status
         raise ActiveRecord::Rollback
       end
 
