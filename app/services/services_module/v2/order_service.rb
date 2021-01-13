@@ -433,6 +433,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
           content = "#{order.category.name} - reagendamento confirmado")
         
         #Faz a manutenção no ciclo recursivo de final_flow_manager
+        puts "\n\n\n==== fazendo o rescheduling ====\n\n\n"
         orders_queue_changer(order_id, true)
         
         order
@@ -577,164 +578,6 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     
   end
 
-  def one_day_earlier_then_order_day
-    current_date_start = Time.now + 1.day
-    current_date_end = current_date_start + 2.day
-
-    current_date_start = current_date_start.strftime("%Y-%m-%d")
-    current_date_end = current_date_end.strftime("%Y-%m-%d")
-
-    data = {pedido: "Falta um dia"}
-
-    orders = Order.where("start_order >= ?", current_date_start)
-    .where("start_order < ?", current_date_end)
-    .where(order_status: :agendando_visita)
-
-    for order in orders
-      user = order.user
-      professinal = order.professional
-
-      user_name = user.name
-      professional_name = professional.name
-
-      user_id = user.id
-      professional_id = professional.id
-
-      address = order.address
-      street = address.street
-      number = address.number
-
-      full_address = street + ' número ' + number
-      district = address.district
-
-      order_day = order.start_order
-      order_day = order_day.strftime("%Y-%m-%d")
-
-      order.order_status = :aguardando_dia_servico
-
-      if order.save
-        content = "Olá %s, gostariamos de te lembrar que você está agendado para atender um pedido no endereço: %s no bairro: %s amanhã. Atenciosamente.: Equipe Finddo." % [professional_name, full_address, district]
-        try = @notification_service.send_notification_with_user_id(professional_id, data, content)
-
-        if try == 401
-          #Colocar isso num log para V3
-          puts "====\n\n\nProfissional do pedido de id %s não recebeu notificação.\n\n\n ===="%order.id
-        end
-
-      else
-        puts "====\n\n\nMudança de status não foi feita para o pedido de id %s.\n\n\n ===="%order.id
-      end
-
-    end
-
-  end
-
-  def order_day_arrived
-    user = nil
-    professional = nil
-    user_name = nil
-    professional_name = nil
-    user_id = nil
-    professional_id = nil
-    content1 = nil
-    content2 = nil
-    try = nil
-    failed_notifications_orders_id = []
-
-    number_of_fails = 0
-    
-    data = {pedido: "Chegou o dia"}
-
-    current_date_start = Time.now
-    current_date_end = current_date_start + 1.day
-
-    current_date_start = current_date_start.strftime("%Y-%m-%d")
-    current_date_end = current_date_end.strftime("%Y-%m-%d")
-
-    orders = Order.where("start_order >= ?", current_date_start)
-    .where("start_order < ?", current_date_end)
-    .where(order_status: :aguardando_dia_servico)
-
-    for order in orders
-      user = order.user
-      professional = order.professional_order
-      
-      user_name = user.name
-      professional_name = professional.name
-
-      user_id = user.id
-      professional_id = professional.id
-
-      order.order_status = :aguardando_profissional
-
-      if order.save
-        content1 = "Olá %s. Gostariamos de te lembrar que chegou o dia de atendimento de um dos serviços que você requisitou. Atenciosamente, Equipe Finddo."%user_name
-        try = @notification_service.send_notification_with_user_id(user_id, data, content1)
-
-        content2 = "Olá %s. Gostariamos de te lembrar que chegou o dia de atendimento de um dos serviços que você aceitou. Atenciosamente, Equipe Finddo."%professional_name
-        try = @notification_service.send_notification_with_user_id(professional_id, data, content2)
-
-        if try == 401
-          number_of_fails = number_of_fails + 1
-          #Colocar isso num log para V3
-          puts "====\n\n\n %s\n\n\n ===="%order.id
-          failed_notifications_orders_id << order.id
-        end
-
-      else
-        #Não salvou fazer tratamento de erro
-        return {"code": 400, "number_of_fails": number_of_fails, "failed_notifications_orders_id": failed_notifications_orders_id}
-      end
-
-    end
-    
-    return {"code": 200, "number_of_fails": number_of_fails, "failed_notifications_orders_id": failed_notifications_orders_id}
-  end
-
-  def professional_arrived_at_service_address
-    orders = Order.where(order_status: :aguardando_profissional)
-    
-    data = {pedido: "Chegou a hora"}
-
-    for order in orders
-      user = order.user
-      professional = order.professional_order
-
-      user_id = user.id
-      professional_id = professional.id
-
-      user_name = user.name
-      professional_name = professional.name
-
-      address = order.address
-      street = address.street
-      number = address.number
-
-      full_address = street + ' número ' + number
-      district = address.district
-
-      content_cliente = "Olá %s, gostariamos de saber se o profissional %s já se encontra em sua residência. Por favor, confirme caso ele se encontre." % [professional_name, user_name]
-      content_professional = "Olá %s, gostariamos de te lembrar que chegou o horário de atender o pedido no endereço: %s no bairro: %s." % [professional_name, full_address, district]
-
-      current_date = Time.now
-      current_time = current_date.strftime("%H:%M:%S")
-
-      order_time_plus_15 = Time.parse(order.hora_inicio) + 15.minute
-      order_time_plus_15 = order_time_plus_15.strftime("%H:%M:%S")
-
-      if current_time >= order_time_plus_15
-        order.order_status = :a_caminho
-
-        if order.save
-          @notification_service.send_notification_with_user_id(user_id, data, content_cliente)
-          @notification_service.send_notification_with_user_id(professional_id, data, content_professional)
-        end
-        
-      end
-      
-    end
-  end
-
   def change_to_em_servico(order)
     order_id = order.id
     
@@ -783,20 +626,22 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
       order_status = order.order_status
       start_order = order.start_order
       
-      if order_status != :agendando_visita
+      if order_status != "agendando_visita" && notification_type == "first call"
         transaction_check = -1
         puts "\n\n\n==== Error: Incorrect order_status. ====\n==== status: %s ====\n\n\n"""%order_status
         raise ActiveRecord::Rollback
       end
 
-      #Ver se precisa converter ambos para string antes de comparar
-      start_order = start_order.strftime("%Y-%m-%d %H:%M:%S")
+      #Checar se a resolução sem hora, minuto e segundo é o suficiente para garantir o funcionamento em 100% dos casos
+      start_order = start_order.strftime("%Y-%m-%d")
       
       current_date = Time.now
 
       #Ajustar essa variavel de acordo com as regras de negócio
       current_date_one_more_day = current_date + 1.day
-      current_date = current_date.strftime("%Y-%m-%d %H:%M:%S")
+      
+      current_date = current_date.strftime("%Y-%m-%d")
+      current_date_one_more_day = current_date_one_more_day.strftime("%Y-%m-%d")
 
       orders_queue_counterpart = OrdersQueue.find_by(order_id: order_id)
 
@@ -820,12 +665,12 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
       district = address.district
 
       if start_order >= current_date && start_order <= current_date_one_more_day
-        
+
         #Manda notificação caso essa seja a primeira chamada dessa função em seu ciclo recursivo
         if notification_type == "first call"
           
           #Aqui poderia fazer uma lógica para colocar :aguardando_profissional, e apenas mudar para :a_caminho quando o profissional confirmar que está realmente a caminho.
-          order.status = :a_caminho
+          order.order_status = :a_caminho
 
           if order.save
             content_cliente = "Olá %s, gostariamos de saber se o profissional %s já se encontra em sua residência. Por favor, confirme fazendo x coisa caso ele se encontre. Atenciosamente: Equipe Finddo." % [professional_name, user_name]
@@ -850,6 +695,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
       else
         transaction_check = -4
         puts "\n\n\n==== Error: Dates mismatch. ====\n\n\n"""
+        puts "\n\n\n ==== start_order: %s =====\n==== current_date: %s ====\n ==== current_date_one_more_day: %s ====\n\n\n"% [start_order,current_date,current_date_one_more_day]
         raise ActiveRecord::Rollback
       end
 
@@ -871,7 +717,7 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     #São feitas checagens imediatamente antes da chamada, e durante ela, para evitar conflitos de status ou chamadas de funcoes desnecessárias.
     order_status = order.order_status
 
-    if order_status == :a_caminho || order_status == :em_servico
+    if order_status == "a_caminho" || order_status == "em_servico"
       puts "\n\n\n==== orders_queue_recursion_manager called. ====\n\n\n"""
 
       #Chamada de orders_queue_recursion_manager passando como argumento o id do pedido
@@ -893,21 +739,21 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
     order_status = order.order_status
 
     #Retira as chamadas recursivas para final_flow_manager dele, e celeta o pedido correspondente em Orders_queue.
-    if order_status == :em_servico
+    if order_status == "em_servico"
 
       order_id = order.id.to_s
       job_name = 'final_flow_manager in 15 minutes for order with id: ' + order_id
 
       Sidekiq.set_schedule(job_name, {'enabled' => false })
       
-      OrdersQueue.find_by(id: order_id.to_i).destroy
+      OrdersQueue.find_by(order_id: order_id.to_i).destroy
 
       puts "\n\n\n==== Recursion finished. ====\n\n\n"""
       return 0
 
     else
-      puts "\n\n\n==== Function scheduled. ====\n\n\n"""
-      CallFinalFlowManagerIn15MinutesJob.new.perform(order_id)
+      puts "\n\n\n==== Function scheduled with DelayedFinalFlowManagerJob. ====\n\n\n"""
+      DelayedFinalFlowManagerJob.new.perform(order_id)
       return 1
     end
 
@@ -946,20 +792,21 @@ class ServicesModule::V2::OrderService < ServicesModule::V2::BaseService
       start_order = order.start_order.strftime("%Y-%m-%d %H:%M:%S")
 
       job_name_at_date = 'final_flow_manager at: ' + start_order + ' for order with id: ' + order_id.to_s
-      job_name_in_15 = 'final_flow_manager in 15 minutes for order with id: ' + order_id
+      job_name_in_15 = 'final_flow_manager in 15 minutes for order with id: ' + order_id.to_s
 
       #Desativa todos os possiveis jobs agendados para este serviço
       Sidekiq.set_schedule(job_name_at_date, {'enabled' => false })
       Sidekiq.set_schedule(job_name_in_15, {'enabled' => false })
 
       if order_status == "cancelado" || order_status == "expirado"
-        OrdersQueue.find_by(id: order_id.to_i).destroy
+        OrdersQueue.find_by(order_id: order_id.to_i).destroy
       end
 
       #Caso o pedido esteja sendo re-agendado
       if reschedule == true
 
         new_start_order = order.rescheduling.date_order
+        puts "\n\n\n==== fazendo o rescheduling ====\n==== data nova: %s ====\n\n\n"%new_start_order
 
         if new_start_order == nil
           transaction_check = -3

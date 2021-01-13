@@ -8,9 +8,8 @@ class EnqueueOrdersJob < ApplicationJob
     
     job_name = 'final_flow_manager at: ' + start_order + ' for order with id: ' + order_id.to_s
     
-    Sidekiq.set_schedule(job_name, { 'at' => [start_order], 'class' => 'FinalFlowManagerSchedulerJob', 'args' => [order_id.to_s, notification_type] } )
-    
-    #OBS: testar desativar um job com :dynamic: true.
+    Sidekiq.set_schedule(job_name, { 'at' => [start_order], 'class' => 'FinalFlowManagerSchedulerJob', 'args' => [order_id, notification_type] } )
+
   end
 end
 

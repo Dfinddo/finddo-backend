@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class OneDayEarlierThenOrderDayJobTest < ActiveJob::TestCase
+class DelayedFinalFlowManagerJobTest < ActiveJob::TestCase
   # test "the truth" do
   #   assert true
   # end

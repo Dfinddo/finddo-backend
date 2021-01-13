@@ -90,7 +90,6 @@ Rails.application.routes.draw do
       put 'orders/direct_associate_professional/:id/:professional_id', to: 'orders#direct_associate_professional'
       get 'expired', to:  'orders#expired_orders'
       put '/orders/rate/:id', to: 'orders#order_rate'
-      get 'order_day_arrived', to: 'orders#order_day_arrived'
       get 'request_cancelation_of_order/:id', to: 'orders#request_cancelation'
     
       # Adresses
