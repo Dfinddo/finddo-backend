@@ -107,6 +107,7 @@ Rails.application.routes.draw do
       get '/chats', to: 'chats#show'
       get '/chats/user/admin', to: 'chats#get_chat_with_admin'
       get '/chats/admin/all', to: 'chats#for_admin_get_chat_list'
+      get '/chats/admin/find_by_name', to: 'chats#find_global_chat_by_name'
       post '/chats', to: 'chats#create'
       post '/chats/admin', to: 'chats#create_chat_admin'
 

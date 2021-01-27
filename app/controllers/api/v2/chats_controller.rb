@@ -1,7 +1,7 @@
 class Api::V2::ChatsController < Api::V2::ApiController
    before_action :require_login
    before_action :set_chat, only: [:show]
-   before_action :set_user_services, only: [:get_chat_list, :get_chat_with_admin_list, :for_admin_get_chat_list]
+   before_action :set_user_services, only: [:get_chat_list, :get_chat_with_admin_list, :for_admin_get_chat_list, :find_global_chat_by_name]
    
    #GET /chats?page
    def index
@@ -611,10 +611,13 @@ class Api::V2::ChatsController < Api::V2::ApiController
 
     #Definicao de variaveis
     page = params[:page].to_i
+    name = params[:name]
+    
     list = []
     users = nil
     total = nil
     user = nil
+    user_id = nil
     user_type = nil
     chat = nil
     title = nil
@@ -634,7 +637,15 @@ class Api::V2::ChatsController < Api::V2::ApiController
       return 400
     end
 
-    users = User.where("user_type = 1 OR user_type = 2").order(created_at: :desc).page(page)
+    if name == nil
+      users = User.where("user_type = 1 OR user_type = 2").order(created_at: :desc).page(page)
+    else
+      users = User
+        .where("upper(name) LIKE upper(?)", "%#{name}%")
+        .where("user_type = 2 OR user_type = 1")
+        .order(name: :asc)
+        .page(page)
+    end
 
     total = users.total_pages
 
@@ -645,11 +656,13 @@ class Api::V2::ChatsController < Api::V2::ApiController
 
     for user in users
 
+      user_id = user.id
+
       if user == nil
         break
       end
 
-      chat = Chat.where(order_id: 170).where("sender_id = ? or receiver_id = ?", user.id,user.id).last
+      chat = Chat.where(order_id: 170).where("sender_id = ? or receiver_id = ?", user_id,user_id).last
       
       if chat == nil
         list << nil
@@ -671,7 +684,7 @@ class Api::V2::ChatsController < Api::V2::ApiController
       user_profile_photo = @user_services.get_profile_photo(user)
 
       #Pega o id do usuário
-      another_user_id = user.id
+      another_user_id = user_id
 
       if user_profile_photo != nil
         user_profile_photo = UserProfilePhotoSerializer.new(user_profile_photo)
@@ -686,6 +699,87 @@ class Api::V2::ChatsController < Api::V2::ApiController
         }
     end
 
+    render json: {"list": list, "page": users.current_page, "total": total}
+    return 200
+  end
+
+  def find_global_chat_by_name
+    if check_admin != 200
+      render json: {"error": "Error: admin privileges required."}
+      return 400
+    end
+
+    name = params[:name]
+    page = params[:page].to_i
+
+    if page == 0
+      page = 1
+    elsif page < 1
+      render json: {"error": "Error: page is lesser then 1."}
+      return 400
+    end
+
+    users = User
+        .where("upper(name) LIKE upper(?)", "%#{name}%")
+        .where("user_type = 2 OR user_type = 1")
+        .order(name: :asc)
+        .page(page)
+
+    total = users.total_pages
+
+    if ((total > 0) && (page > total) )
+      render json: {"error": "Error: page is greater then total_pages."}
+      return 400
+    end
+
+    list = []
+    
+    for user in users
+      puts ("\n\n\n==== %s ====\n\n\n")%user
+      if user == nil
+        break
+      end
+
+      user_id = user.id
+      chat = Chat.find_by("sender_id = ? OR receiver_id = ?", user_id, user_id)
+
+      if chat != nil
+      
+        user_type = user.user_type
+
+        if user_type == "user"
+          title = "Suporte - " + user.name + " - (Usuário)"
+        elsif user_type == "professional"
+          title = "Suporte - " + user.name + " - (Profissional)"
+        else
+          render json: {"debug": "Error: This function logic is not prepared to deal with this type of user."}
+          return 400
+        end
+
+        #Pega a foto do usuário
+        user_profile_photo = @user_services.get_profile_photo(user)
+
+        #Pega o id do usuário
+        another_user_id = user.id
+
+        if user_profile_photo != nil
+          user_profile_photo = UserProfilePhotoSerializer.new(user_profile_photo)
+        end
+
+        last_message = {"message": chat.message, "created_at": chat.created_at}
+
+        list << {"another_user_id": another_user_id,
+          "user_profile_photo": user_profile_photo,
+          "title": title,
+          "last_message": last_message
+          }
+      
+      else
+        list << nil
+      end
+      
+    end
+    
     render json: {"list": list, "page": users.current_page, "total": total}
     return 200
   end
